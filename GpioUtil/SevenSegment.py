@@ -139,7 +139,11 @@ class SevenSegment:
             for j in nums:
                 s.set(j,j)
                 time.sleep(.05)
-            
+
+    def test(self):
+        self.snake(2)
+        self.set(' ',' ')
+        
 if __name__ == '__main__':        
     import RPi.GPIO as io
     print "Testing...."
@@ -162,9 +166,9 @@ if __name__ == '__main__':
     
     #snake
     s.snake(5)
-    
-    s.set('.','.');
 
+    s.test()
+    
     io.cleanup()
 
     
