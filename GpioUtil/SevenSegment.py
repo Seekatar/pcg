@@ -137,7 +137,7 @@ class SevenSegment:
         for i in range(count):
             nums = [1,2,0x40,0x10,8,4,0x40,0x20]
             for j in nums:
-                s.set(j,j)
+                self.set(j,j)
                 time.sleep(.05)
 
     def test(self):

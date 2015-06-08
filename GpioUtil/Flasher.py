@@ -24,6 +24,9 @@ class Flasher:
             if count > 1:
                 time.sleep(delaySec)
 
+    def test(self):
+        self.flash(5)
+        
 if __name__ == '__main__':        
     import RPi.GPIO as io
     print "Testing...."
