@@ -3,8 +3,18 @@ import time
 import random
 import sys
 import os
+import signal
 
-sys.path.append(os.path.join(os.getcwd(),'GpioUtil'))
+print ">>>>",os.path.dirname(__file__)
+sys.path.append(os.path.join(os.path.dirname(__file__),'GpioUtil'))
+
+def signal_handler(signal, frame):
+    io.cleanup()
+    print "Cleaned up"
+    sys.exit(0)
+
+signal.signal(signal.SIGINT, signal_handler)
+  
 
 
 from SevenSegment import SevenSegment
@@ -13,92 +23,104 @@ from CharliePlexer import CharliePlexer
 
 # initialize
 io.setmode(io.BOARD)
-sevenSegment = SevenSegment()
-beeper = Flasher(3)
-ledArray = CharliePlexer()
 
-sevenSegment.test()
-beeper.test()
-ledArray.test()
-                
-DEBUG = False
-led1 = 15
-led2 = 13
+DEBUG = True
 
-beeper = 7
+# CharliePlexing Numbers
+led1 = 0
+led2 = 1
+led4 = 2
+led5 = 3
+ledCorrect = 4
+ledIncorrect = 5
 
-button1 = 11
-button2 = 12
-stopbutton = 16
+# Channel Numbers
+beeperNumber = 3
+
+plate1 = 5
+plate2 = 23
+plate3 = 10
+plate4 = 7
+plate5 = 21
+plate6 = 19
+plate7 = 26
+plate8 = 24
+plate9 = 8
 
 DELAY_SEC = 1
 DELAY_PAUSE_SEC = .5
-LOOP_CNT = 10
+LOOP_CNT = 20
 
-io.setmode(io.BOARD)
+leds = [ led1, led2, led4, led5 ]
 
-io.setup(beeper,io.OUT)
-
-leds = [ led1, led2 ]
-for l in leds:
-    io.setup(l,io.OUT)
-
-buttons = [ button1, button2, stopbutton]
-for b in buttons:
+plates = [ plate1, plate2, plate4, plate5 ]
+for b in plates:
     io.setup(b,io.IN, pull_up_down=io.PUD_UP)
 
-def beep(durationSec = .1, pin = 7):
-    io.output(pin,io.HIGH)
-    time.sleep(durationSec)
-    io.output(pin,io.LOW)
+sevenSegment = SevenSegment(2)
+beeper = Flasher(beeperNumber)
+ledArray = CharliePlexer()
 
-def beepbeep(durationSec = .01, waitSec = .01, pin = 7):
-    beep(durationSec,pin)
-    time.sleep(waitSec)
-    beep(durationSec,pin)
-
-def beepbeepbeep(durationSec = .01, waitSec = .01, pin = 7):
-    beep(durationSec,pin)
-    time.sleep(waitSec)
-    beep(durationSec,pin)
-    time.sleep(waitSec)
-    beep(durationSec,pin)
+if DEBUG:
+    sevenSegment.test()
+    beeper.test()
+    ledArray.test()
 
 
+sevenSegment.set(' ',' ')
 
-prevState0 = io.HIGH
-prevState1 = io.HIGH
-
-for l in leds:
-    io.output(l, io.LOW) 
-
+# At start turn on middle panel
 while True:
+    
+    print "Waiting for plate 5"
+    while True:
+        ledArray.light(led5)
+        state = io.input(plate5)
+        if state == io.LOW:
+            if DEBUG:
+                print "Ready to play"
+            for l in leds:
+                ledArray.light(l)
+                time.sleep(.2)
+            ledArray.light(-1)
+            break
+        time.sleep(.1)
+        ledArray.light(-1)
+        time.sleep(.1)
+
+    misses = 0
+    sevenSegment.set_num(misses)
+
+    # Game ready to start
     for x in range(0,LOOP_CNT):
         ledToLight = random.randint(0,len(leds)-1)
-        io.output(leds[ledToLight],io.HIGH)
-        print 'hit it now!', ledToLight
+        ledArray.light(leds[ledToLight])
+
+        if DEBUG:
+            print 'hit it now!', ledToLight
 
         hit = False 
 
         while not hit:
-            for b in buttons:
+            for b in plates:
                 state = io.input(b)
-                if DEBUG:
-                    print "state is",state,"for",b,"looking for",buttons[ledToLight]
+                if False: #DEBUG:
+                    print "state is",state,"for",b,"looking for",plates[ledToLight]
                 if state == io.LOW:
-                    if  b == buttons[ledToLight]:
+                    if  b == plates[ledToLight]:
                         hit = True
-                        print "HIT!"
-                        beep(.05)
+                        print "HIT!",misses,"/",LOOP_CNT
+                        ledArray.light(ledCorrect)
+                        beeper.flash(.3)
                         break
-                    elif b == stopbutton:
-                        beepbeepbeep(.3,.2)
-                        exit (9)
                     else:
                         print "Miss."
-                        beepbeep()
+                        misses = misses + 1
+                        sevenSegment.set_num(misses)
+                        ledArray.light(ledIncorrect)
+                        beeper.flash(.1, 3)
+                        time.sleep(DELAY_PAUSE_SEC)
+                        ledArray.light(ledToLight)
             
-        io.output(leds[ledToLight],io.LOW)
-        time.sleep(DELAY_PAUSE_SEC)
 
-    beep(1)
+    beeper.flash(1)

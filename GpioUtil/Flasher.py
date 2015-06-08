@@ -16,7 +16,7 @@ class Flasher:
 
         io.output(self._pin, io.LOW)
 
-    def flash(self, count = 1, durationSec = .1, delaySec = .1):
+    def flash(self, durationSec = .1, count = 1, delaySec = .1):
         for i in range(count):
             io.output(self._pin,io.HIGH)
             time.sleep(durationSec)
@@ -25,7 +25,7 @@ class Flasher:
                 time.sleep(delaySec)
 
     def test(self):
-        self.flash(5)
+        self.flash(1)
         
 if __name__ == '__main__':        
     import RPi.GPIO as io
@@ -34,4 +34,4 @@ if __name__ == '__main__':
     io.setmode(io.BOARD)
     
     f = Flasher(3)
-    f.flash(5)
+    f.flash(count = 5)

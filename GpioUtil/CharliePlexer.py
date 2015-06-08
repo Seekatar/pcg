@@ -50,7 +50,7 @@ class CharliePlexer:
         """
         light up one of the lights
         """
-        if state < 0 or state > len(self._states):
+        if state < -1 or state > len(self._states):
             return
         
         if state == -1:
@@ -72,10 +72,9 @@ class CharliePlexer:
         """
         Light all the LEDs
         """
-        for j in range(2):
-            for i in range(len(self._states)):
-                self.light(i)
-                time.sleep(.3)
+        for i in range(len(self._states)):
+            self.light(i)
+            time.sleep(.3)
         self.light(-1)
             
 if __name__ == '__main__':        
