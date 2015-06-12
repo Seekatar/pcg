@@ -5,7 +5,6 @@ import sys
 import os
 import signal
 
-print ">>>>",os.path.dirname(__file__)
 sys.path.append(os.path.join(os.path.dirname(__file__),'GpioUtil'))
 
 def signal_handler(signal, frame):
