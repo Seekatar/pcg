@@ -1,20 +1,34 @@
+import time
 
-
-class User:
-	
+class User(object):
+	"""
+        Simple user, date only for easy storing in database
+        """
 	def __init__(self):
+                self.user_id = None # database id
 		self.first_name = None
 		self.last_name = None
 		self.email = None
 		self.pin = None
-		
-class GameBaseData:
+
+class Score(object):
+        """
+        Simple score object for easy storing in database
+        """
+	def __init__(self):
+		self.id = None # database id
+                self.score = 0
+                self.user_id = None
+                self.game_id = None
+                self.timestamp = None
+                
+class GameBaseData(object):
 	"""
 	Just the data members for a game
 	"""
 	def __init__(self):
+		self.game_id = None # database id
 		self.name = None
-		self.id = None
 		self.description = None
 		self.author = None
 		self.date = None
@@ -37,9 +51,15 @@ class GameBase(GameBaseData):
 		Implement to play your game.  Return the score
 		"""
 		pass
-		
 
-class HardwareBase:
+	def cleanup(self):
+                """
+                Implement to cleanup your game in case it was interrupted
+                """
+                pass
+        
+
+class HardwareBase(object):
 	"""
 	Abstraction of the hardware
 
@@ -49,6 +69,24 @@ class HardwareBase:
 	def self_test(self):
 		pass
 
+        def initialize(self):
+                """
+                do any one-time initialization
+                """
+                pass
+
+        def cleanup(self):
+                """
+                cleanup on exit
+                """
+                pass
+        
+        def reset(self):
+                """
+                reset between games
+                """
+                pass
+        
 	def light_bad(self,duration_sec=0):
 		"""
 		Turn on the 'bad' light for duration seconds, blocking
@@ -97,3 +135,10 @@ class HardwareBase:
 		the button number that was pressed
 		"""
 		pass
+
+	def wait(self,timeout_sec = .5):
+                """
+                wait for a bit
+                """
+                time.sleep(timeout_sec)
+                

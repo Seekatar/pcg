@@ -1,125 +1,99 @@
-import RPi.GPIO as io
+import argparse
 import time
 import random
 import sys
 import os
 import signal
 
-sys.path.append(os.path.join(os.path.dirname(__file__),'GpioUtil'))
+sys.path.append(os.path.join(os.path.dirname(__file__),'Hardware'))
+sys.path.append(os.path.join(os.path.dirname(__file__),'Games'))
+
+from Base import User
 
 def signal_handler(signal, frame):
-    io.cleanup()
+    """
+    control C handler when interactive
+    """
+    # TODO 
     print "Cleaned up"
     sys.exit(0)
 
 signal.signal(signal.SIGINT, signal_handler)
-  
 
+hardware = None
+games = {}
 
-from SevenSegment import SevenSegment
-from Flasher import Flasher
-from CharliePlexer import CharliePlexer                
-
-# initialize
-io.setmode(io.BOARD)
-
-DEBUG = True
-
-# CharliePlexing Numbers
-led1 = 0
-led2 = 1
-led4 = 2
-led5 = 3
-ledCorrect = 4
-ledIncorrect = 5
-
-# Channel Numbers
-beeperNumber = 3
-
-plate1 = 5
-plate2 = 23
-plate3 = 10
-plate4 = 7
-plate5 = 21
-plate6 = 19
-plate7 = 26
-plate8 = 24
-plate9 = 8
-
-DELAY_SEC = 1
-DELAY_PAUSE_SEC = .5
-LOOP_CNT = 20
-
-leds = [ led1, led2, led4, led5 ]
-
-plates = [ plate1, plate2, plate4, plate5 ]
-for b in plates:
-    io.setup(b,io.IN, pull_up_down=io.PUD_UP)
-
-sevenSegment = SevenSegment(2)
-beeper = Flasher(beeperNumber)
-ledArray = CharliePlexer()
-
-if DEBUG:
-    sevenSegment.test()
-    beeper.test()
-    ledArray.test()
-
-
-sevenSegment.set(' ',' ')
-
-# At start turn on middle panel
-while True:
+def _initialize():
+    global hardware
+    global games
     
-    print "Waiting for plate 5"
+    parser = argparse.ArgumentParser(description='Point Control Game by Jimmy Wallace')
+    parser.add_argument('-t','--test',action='store_true',help='run the simulator instead of on Pi hardware')
+    parser.add_argument('-d','--debug',action='store_true',help='show debug message on console')
+
+    args = parser.parse_args()
+
+    # load the hardware
+    if args.test:
+        from TestHardware import TestHardware
+        hardware = TestHardware()
+    else:
+        from PiHardware import PiHardware
+        hardware = PiHardware()
+
+    hardware.initialize()
+
+    # load games
+    from TestGame import TestGame
+
+    games[9] = TestGame()
+
+def _get_user():
+    """
+    get a user 
+    """
+    u = User()
+    u.first_name = 'Jimmy'
+    u.last_name = 'Wallace'
+    u.email = 'xeekatar@gmal.com'
+    u.pin = '1234'
+    return u
+
+def _main():
+    """
+    main loop
+    """
+    user = None
+    
     while True:
-        ledArray.light(led5)
-        state = io.input(plate5)
-        if state == io.LOW:
-            if DEBUG:
-                print "Ready to play"
-            for l in leds:
-                ledArray.light(l)
-                time.sleep(.2)
-            ledArray.light(-1)
-            break
-        time.sleep(.1)
-        ledArray.light(-1)
-        time.sleep(.1)
+        hardware.reset()
 
-    misses = 0
-    sevenSegment.set_num(misses)
-
-    # Game ready to start
-    for x in range(0,LOOP_CNT):
-        ledToLight = random.randint(0,len(leds)-1)
-        ledArray.light(leds[ledToLight])
-
-        if DEBUG:
-            print 'hit it now!', ledToLight
-
-        hit = False 
-
-        while not hit:
-            for b in plates:
-                state = io.input(b)
-                if False: #DEBUG:
-                    print "state is",state,"for",b,"looking for",plates[ledToLight]
-                if state == io.LOW:
-                    if  b == plates[ledToLight]:
-                        hit = True
-                        print "HIT!",misses,"/",LOOP_CNT
-                        ledArray.light(ledCorrect)
-                        beeper.flash(.3)
-                        break
-                    else:
-                        print "Miss."
-                        misses = misses + 1
-                        sevenSegment.set_num(misses)
-                        ledArray.light(ledIncorrect)
-                        beeper.flash(.1, 3)
-                        time.sleep(DELAY_PAUSE_SEC)
-                        ledArray.light(ledToLight)
+        if user is None:
+            user = _get_user()
             
+        # do game selection by good/bad light
+        print "Waiting for a game selection"
+        while True:
+            hardware.light_good()
+            b = hardware.wait_for_button()
+            if b in games:
+                break
+            else:
+                hardware.beep()
+            hardware.wait(.1)
+            hardware.light_bad()
+            hardware.wait(.1)
 
-    beeper.flash(1)
+        # game picked
+        game = games[b]
+
+        game.initialize(hardware,user)
+
+        game.play()
+        
+        
+if __name__ == '__main__':
+    
+    _initialize()
+
+    _main()
