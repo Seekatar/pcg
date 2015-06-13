@@ -3,8 +3,9 @@ import os
 import time
 
 sys.path.append(os.path.join(os.path.dirname(__file__),'..'))
-print sys.path
+
 import Base
+import msvcrt
 import colorama
 colorama.init()
 
@@ -29,10 +30,12 @@ class TestHardware(Base.HardwareBase):
 		pass
 
         def cleanup(self):
+                print "\033[0m" # reset
                 print "\033[2J" # cls
 
         def reset(self):
                 self.show_board()
+                print "\033[0m" # reset
                 
 	def light_bad(self,duration_sec=.5):
 		"""
@@ -102,9 +105,20 @@ class TestHardware(Base.HardwareBase):
 		Wait for a button to be pressed.  Will return
 		the button number that was pressed
 		"""
-		print pos(13,1)+colorama.Back.BLACK+colorama.Fore.WHITE+"Press	a button"
-		return int(raw_input())
-		
+		while True:
+                        c = msvcrt.getch()
+                        if c >= '1' and c <= '9':
+                                return int(c)
+                        else:
+                                self.beep()
+
+        def write_message(self,line1,line2=""):
+                """
+                write a message to the two line display
+                """
+                print pos(13,0)+colorama.Fore.BLUE+colorama.Style.BRIGHT+line1+' '*(78-len(line1))
+                print pos(14,0)+colorama.Fore.BLUE+colorama.Style.BRIGHT+line2+' '*(78-len(line2))
+                		
 if __name__ == '__main__':        
 	test = HardwareTest()
 	score = 0
@@ -120,4 +134,5 @@ if __name__ == '__main__':
 			test.light_bad()
 			test.beep()
 			test.beep()
+	test.write_message("this is line 1","this is line2")
 			

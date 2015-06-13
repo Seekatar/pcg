@@ -72,7 +72,7 @@ def _main():
             user = _get_user()
             
         # do game selection by good/bad light
-        print "Waiting for a game selection"
+        hardware.write_message("Waiting for a game selection")
         while True:
             hardware.light_good()
             b = hardware.wait_for_button()

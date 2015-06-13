@@ -25,6 +25,8 @@ class TestGame(Base.GameBase):
 		Implement to play your game.  Return the score
 		"""
                 wrong = 0
+
+                self.hardware.write_message('Press 1-9')
                 
 		for i in range(1,10):
                     self.hardware.light_on(i)
@@ -34,12 +36,12 @@ class TestGame(Base.GameBase):
                         if b != i: # wrong
                             wrong += 1
                             self.hardware.display_number(wrong)
-                            self.hardware.light_bad(.3)
+                            self.hardware.light_bad()
                             self.hardware.beep(duration_sec=.2)
                             self.hardware.light_on(i)
                         
                 # game over
-                self.hardware.light_off(-1)
+                self.hardware.light_off()
                 self.hardware.beep(duration_sec=1)
                 return wrong
                 

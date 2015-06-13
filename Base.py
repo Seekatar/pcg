@@ -141,4 +141,10 @@ class HardwareBase(object):
                 wait for a bit
                 """
                 time.sleep(timeout_sec)
+
+        def write_message(self,line1,line2=""):
+                """
+                write a message to the two line display
+                """
+                pass
                 
