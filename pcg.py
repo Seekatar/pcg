@@ -29,8 +29,13 @@ DEBUG = True
 # CharliePlexing Numbers
 led1 = 0
 led2 = 1
+led3 = 11
 led4 = 2
 led5 = 3
+led6 = 10
+led7 = 9
+led8 = 8
+led9 = 6
 ledCorrect = 4
 ledIncorrect = 5
 
@@ -51,9 +56,9 @@ DELAY_SEC = 1
 DELAY_PAUSE_SEC = .5
 LOOP_CNT = 20
 
-leds = [ led1, led2, led4, led5 ]
+leds = [ led1, led2, led3, led4, led5, led6, led7, led8, led9 ]
 
-plates = [ plate1, plate2, plate4, plate5 ]
+plates = [ plate1, plate2, plate3, plate4, plate5, plate6, plate7, plate8, plate9 ]
 for b in plates:
     io.setup(b,io.IN, pull_up_down=io.PUD_UP)
 
@@ -61,7 +66,7 @@ sevenSegment = SevenSegment(2)
 beeper = Flasher(beeperNumber)
 ledArray = CharliePlexer()
 
-if DEBUG:
+if False:
     sevenSegment.test()
     beeper.test()
     ledArray.test()
@@ -97,7 +102,7 @@ while True:
         ledArray.light(leds[ledToLight])
 
         if DEBUG:
-            print 'hit it now!', ledToLight
+            print 'hit it now! plate', ledToLight+1,'led', leds[ledToLight], 'plate pin', plates[ledToLight]
 
         hit = False 
 
@@ -114,13 +119,13 @@ while True:
                         beeper.flash(.3)
                         break
                     else:
-                        print "Miss."
+                        print "Miss. plate",b,'looking for', plates[ledToLight]
                         misses = misses + 1
                         sevenSegment.set_num(misses)
                         ledArray.light(ledIncorrect)
                         beeper.flash(.1, 3)
                         time.sleep(DELAY_PAUSE_SEC)
-                        ledArray.light(ledToLight)
+                        ledArray.light(leds[ledToLight])
             
 
     beeper.flash(1)
