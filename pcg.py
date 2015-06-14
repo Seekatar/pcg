@@ -4,11 +4,13 @@ import random
 import sys
 import os
 import signal
+from inspect import isclass
+from glob import glob
 
 sys.path.append(os.path.join(os.path.dirname(__file__),'Hardware'))
 sys.path.append(os.path.join(os.path.dirname(__file__),'Games'))
 
-from Base import User
+from Base import User,Game
 
 def signal_handler(signal, frame):
     """
@@ -21,9 +23,27 @@ def signal_handler(signal, frame):
 signal.signal(signal.SIGINT, signal_handler)
 
 hardware = None
-games = {}
+games = []
 
+def _load_games():
+    """
+    load all the game classes in the Games folder
+    """
+    games = []
+    gameFolder = os.path.join(os.path.dirname(__file__),'Games')
+    sys.path.append(gameFolder)
+    print os.path.join(gameFolder,'*.py')
+    for f in  glob(os.path.join(gameFolder,'*.py')):
+        m = __import__(os.path.splitext(os.path.basename(f))[0])
+        for i in dir(m):
+            if not i.startswith('__') and isclass(m.__dict__[i]) and issubclass(m.__dict__[i],Game):
+                games.append(m.__dict__[i])
+    return games
+    
 def _initialize():
+    """
+    initialize the main game
+    """
     global hardware
     global games
     
@@ -44,10 +64,8 @@ def _initialize():
     hardware.initialize()
 
     # load games
-    from TestGame import TestGame
-
-    games[9] = TestGame()
-
+    games = _load_games()
+    
 def _get_user():
     """
     get a user 
@@ -72,11 +90,11 @@ def _main():
             user = _get_user()
             
         # do game selection by good/bad light
-        hardware.write_message("Waiting for a game selection")
+        hardware.write_message("Waiting for a game selection","games len is %d" % len(games))
         while True:
             hardware.light_good()
-            b = hardware.wait_for_button()
-            if b in games:
+            b = hardware.wait_for_button()-1 # array 0-based, buttons 1-based
+            if b >= 0 and b < len(games): 
                 break
             else:
                 hardware.beep()
@@ -84,8 +102,8 @@ def _main():
             hardware.light_bad()
             hardware.wait(.1)
 
-        # game picked
-        game = games[b]
+        # game picked, construct it
+        game = games[b]() 
 
         game.initialize(hardware,user)
 

@@ -1,12 +1,23 @@
-class A(object):
-    def x(self):
-        print 'A'
+import Base
+import sys
+from glob import glob
 
-class B(A):
-    def x(self):
-        super(B,self).x()
-        print "B"
+def _loadGames():
+    """
+    """
 
-b = B()
-b.x()
-        
+    games = []
+    
+    gamePath = os.path.join(os.path.dirname(__file__),'Games'
+    sys.path.append(gamePath)
+    for f in glob(os.path.join(gamePath,'*.py')):
+        m = __import__(os.path.basename(f))
+        for i in dir(m):
+            if not i.startswith('__') and issubclass(i,Base.GameBase):
+                games.append(i)
+
+    return games
+
+
+                            
+                

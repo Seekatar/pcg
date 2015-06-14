@@ -22,23 +22,26 @@ class Score(object):
                 self.game_id = None
                 self.timestamp = None
                 
-class GameBaseData(object):
+class GameData(object):
 	"""
 	Just the data members for a game
 	"""
-	def __init__(self):
+	def __init__(self,name,description,author,date,version):
 		self.game_id = None # database id
-		self.name = None
-		self.description = None
-		self.author = None
-		self.date = None
-		self.version = None
+		self.name = name
+		self.description = description
+		self.author = author
+		self.date = date
+		self.version = version
 	
-class GameBase(GameBaseData):
+class Game(GameData):
 	"""
 	Base class for games
 	"""
 	
+	def __init__(self,name,description,author,date,version):
+                super(Game,self).__init__(name,description,author,date,version)
+		
 	def initialize(self,hardware,user):
 		"""
 		Initialize 
@@ -59,7 +62,7 @@ class GameBase(GameBaseData):
                 pass
         
 
-class HardwareBase(object):
+class Hardware(object):
 	"""
 	Abstraction of the hardware
 
@@ -136,7 +139,13 @@ class HardwareBase(object):
 		"""
 		pass
 
-	def wait(self,timeout_sec = .5):
+        def blink_light_until_button(self, number, button, blink_on_sec, blink_off_sec ):
+            """
+            blink a light until a button is pressed use -1 for button to return on any button
+            """
+            pass
+    
+        def wait(self,timeout_sec = .5):
                 """
                 wait for a bit
                 """

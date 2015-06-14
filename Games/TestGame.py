@@ -1,10 +1,17 @@
 import Base
+import datetime
 
-class TestGame(Base.GameBase):
+class TestGame(Base.Game):
 	"""
-	Simple test game that lights all panels waiting
-	for a hit
+	Simple test game that lights all panels waiting	for a hit
 	"""
+
+	def __init__(self):
+                super(TestGame,self).__init__('Test game',
+                                          'Game to test leds and buttons',
+                                          'Jim Wallace',
+                                          datetime.date(2015,6,12),
+                                          '0.1')
 	
 	def initialize(self,hardware,user):
 		"""
@@ -12,12 +19,6 @@ class TestGame(Base.GameBase):
 		"""
 		super(TestGame,self).initialize(hardware,user)
                 
-		self.name = 'Test game'
-		self.description = 'Game to test leds and buttons'
-		self.author = 'Jim Wallace'
-		self.date = '2015-6-12'
-		self.version = '0.1'
-
 		self.hardware.display_number(0)
 		
 	def play(self):

@@ -11,7 +11,7 @@ colorama.init()
 
 pos = lambda y, x: '\x1b[%d;%dH' % (y, x)
 
-class TestHardware(Base.HardwareBase):
+class TestHardware(Base.Hardware):
 
 
 	def __init__(self):
@@ -111,6 +111,13 @@ class TestHardware(Base.HardwareBase):
                                 return int(c)
                         else:
                                 self.beep()
+
+        def blink_light_until_button(self, number, button, blink_on_sec, blink_off_sec ):
+            """
+            blink a light until a button is pressed use -1 for button to return on any button
+            """
+            self.light_on(number)
+            wait_for_button(button)
 
         def write_message(self,line1,line2=""):
                 """

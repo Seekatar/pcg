@@ -3,123 +3,179 @@ import time
 import random
 import sys
 import os
-import signal
+import Base
 
-sys.path.append(os.path.join(os.path.dirname(__file__),'GpioUtil'))
-
-def signal_handler(signal, frame):
-    io.cleanup()
-    print "Cleaned up"
-    sys.exit(0)
-
-signal.signal(signal.SIGINT, signal_handler)
-  
-
+sys.path.append(os.path.join(os.path.dirname(__file__),'..','GpioUtil'))
 
 from SevenSegment import SevenSegment
 from Flasher import Flasher
 from CharliePlexer import CharliePlexer                
 
-# initialize
-io.setmode(io.BOARD)
+class PiHardware(Base.Hardware):
+    """
+    RaspberryPi RPi.GPIO implementation of the hardware
+    """
 
-DEBUG = True
+    def initialize(self):
+        
+        # initialize
+        io.setmode(io.BOARD)
 
-# CharliePlexing Numbers
-led1 = 0
-led2 = 1
-led4 = 2
-led5 = 3
-ledCorrect = 4
-ledIncorrect = 5
+        DEBUG = True             
 
-# Channel Numbers
-beeperNumber = 3
+        # CharliePlexing Numbers
+        self.led1 = 0
+        self.led2 = 1
+        self.led3 = 11
+        self.led4 = 2
+        self.led5 = 3
+        self.led6 = 10
+        self.led7 = 9
+        self.led8 = 8
+        self.led9 = 6
+        self.ledCorrect = 4
+        self.ledIncorrect = 5
 
-plate1 = 5
-plate2 = 23
-plate3 = 10
-plate4 = 7
-plate5 = 21
-plate6 = 19
-plate7 = 26
-plate8 = 24
-plate9 = 8
+        # Channel Numbers
+        beeperNumber = 3
 
-DELAY_SEC = 1
-DELAY_PAUSE_SEC = .5
-LOOP_CNT = 20
+        self.plate1 = 5
+        self.plate2 = 23
+        self.plate3 = 10
+        self.plate4 = 7
+        self.plate5 = 21
+        self.plate6 = 19
+        self.plate7 = 26
+        self.plate8 = 24
+        self.plate9 = 8
 
-leds = [ led1, led2, led4, led5 ]
+        self.DELAY_SEC = 1
+        self.DELAY_PAUSE_SEC = .5
+        self.LOOP_CNT = 20
 
-plates = [ plate1, plate2, plate4, plate5 ]
-for b in plates:
-    io.setup(b,io.IN, pull_up_down=io.PUD_UP)
+        self.leds = [ self.led1, self.led2, self.led3, self.led4, self.led5, self.led6, self.led7, self.led8, self.led9 ]
 
-sevenSegment = SevenSegment(2)
-beeper = Flasher(beeperNumber)
-ledArray = CharliePlexer()
+        self.plates = [ self.plate1, self.plate2, self.plate3, self.plate4, self.plate5, self.plate6, self.plate7, self.plate8, self.plate9 ]
+        for b in self.plates:
+            io.setup(b,io.IN, pull_up_down=io.PUD_UP)
 
-if DEBUG:
-    sevenSegment.test()
-    beeper.test()
-    ledArray.test()
+        self.sevenSegment = SevenSegment(2)
+        self.beeper = Flasher(beeperNumber)
+        self.ledArray = CharliePlexer()
 
+    def self_test(self):
+            self.sevenSegment.test()
+            self.beeper.test()
+            self.ledArray.test()
 
-sevenSegment.set(' ',' ')
-
-# At start turn on middle panel
-while True:
+        
+    def reset(self):
+        """
+        reset between games
+        """
+ 
+    def cleanup(self):
+        """
+            cleanup on exit
+        """
+            pass
     
-    print "Waiting for plate 5"
-    while True:
-        ledArray.light(led5)
-        state = io.input(plate5)
-        if state == io.LOW:
-            if DEBUG:
-                print "Ready to play"
-            for l in leds:
-                ledArray.light(l)
-                time.sleep(.2)
-            ledArray.light(-1)
-            break
-        time.sleep(.1)
-        ledArray.light(-1)
-        time.sleep(.1)
+    def reset(self):
+        """
+        reset between games
+        """
+        self.sevenSegment.set(' ',' ')
+   
+    def light_bad(self,duration_sec=0):
+        """
+            Turn on the 'bad' light for duration seconds, blocking
+        """
+        self.ledArray.light(self.ledIncorrect)
+        if duration_sec > 0:
+            time.sleep(duration_sec)
+            self.light_off()
 
-    misses = 0
-    sevenSegment.set_num(misses)
-
-    # Game ready to start
-    for x in range(0,LOOP_CNT):
-        ledToLight = random.randint(0,len(leds)-1)
-        ledArray.light(leds[ledToLight])
-
-        if DEBUG:
-            print 'hit it now!', ledToLight
-
-        hit = False 
-
-        while not hit:
-            for b in plates:
-                state = io.input(b)
-                if False: #DEBUG:
-                    print "state is",state,"for",b,"looking for",plates[ledToLight]
-                if state == io.LOW:
-                    if  b == plates[ledToLight]:
-                        hit = True
-                        print "HIT!",misses,"/",LOOP_CNT
-                        ledArray.light(ledCorrect)
-                        beeper.flash(.3)
-                        break
-                    else:
-                        print "Miss."
-                        misses = misses + 1
-                        sevenSegment.set_num(misses)
-                        ledArray.light(ledIncorrect)
-                        beeper.flash(.1, 3)
-                        time.sleep(DELAY_PAUSE_SEC)
-                        ledArray.light(ledToLight)
+    def light_good(self,duration_sec=0):
+        """
+        Turn on the 'good' light for duration seconds, blocking
+        """
+        self.ledArray.light(self.ledCorrect)
+        if duration_sec > 0:
+            time.sleep(duration_sec)
+            self.light_off()
             
+    def light_on(self,number,duration_sec=0):
+        """
+            Turn on a light for duration seconds, blocking
+        """
+        if number >= 1 and number <= len(self.leds):
+            self.ledArray.light(self.leds[number-1])
+            if duration_sec > 0:
+                time.sleep(duration_sec)
+                self.light_off()
+            
+    def light_off(self,number = -1):
+        """
+            Turn off a light.  Use -1 to turn off all
+        """
+        self.ledArray.light(-1)
 
-    beeper.flash(1)
+            
+    def display_number(self,number):
+        """
+        Put this number on the two-digit display
+        """
+         self.sevenSegment.set_num(number)
+ 
+    def display_characters(self,char1=' ',char2=' '):
+        """
+        Put these characters on the two-digit display
+        """
+        self.sevenSegment.set(char1,char2)
+            
+    def beep(self,count=1,duration_sec=.5,interval_sec=.3):
+        """
+        Sound the beeper
+        """
+        self.beeper.flash(count,duration_sec,interval_sec)
+            
+    def wait_for_button(self,expected_button,timeout_sec=0):
+        """
+            Wait for a button to be pressed.  Will return
+            the button number that was pressed
+        """
+        while not hit:
+            for plate,b in enumerate(self.plates):
+                state = io.input(b)
+                
+                if False: #DEBUG:
+                    print "state is",state,"for",b,"looking for",self.plates[self.ledToLight]
+                    
+                if state == io.LOW:
+                    # hit!
+                    return plate+1 # plate number is 1 based
+
+
+    def blink_light_until_button(self, number, button, blink_on_sec =.1, blink_off_sec =.1):
+        """
+        blink a light until a button is pressed use -1 for button to return on any button
+        """
+        if number < 1 or number > len(self.leds) or button < 1 or button > len(self.leds):
+            raise "Invalid parameter"
+        
+        while True:
+            self.light_on(number)
+            pressButton = self.wait_for_button(button)
+            if button == -1 or pressButton == button:
+                return button
+            self.wait(blink_on_sec)
+            self.light_off()
+            self.wait(blink_off_sec)
+    
+    def write_message(self,line1,line2=""):
+        """
+        write a message to the two line display
+        """
+        pass
+                
+
