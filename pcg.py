@@ -7,7 +7,7 @@ import signal
 from inspect import isclass
 from glob import glob
 
-sys.path.append(os.path.join(os.path.dirname(__file__),'Hardware'))
+sys.path.append(os.path.join(os.path.dirname(__file__),'hardware'))
 sys.path.append(os.path.join(os.path.dirname(__file__),'Games'))
 
 from Base import User,Game
@@ -16,7 +16,8 @@ def signal_handler(signal, frame):
     """
     control C handler when interactive
     """
-    # TODO 
+    if hardware is not None:
+        hardware.cleanup()
     print "Cleaned up"
     sys.exit(0)
 
@@ -90,23 +91,26 @@ def _main():
             user = _get_user()
             
         # do game selection by good/bad light
-        hardware.write_message("Waiting for a game selection","games len is %d" % len(games))
+        hardware.write_message("Waiting for a game selection","  Choose 1 - %d" % len(games))
         while True:
             hardware.light_good()
-            b = hardware.wait_for_button()-1 # array 0-based, buttons 1-based
-            if b >= 0 and b < len(games): 
+            b = hardware.wait_for_button() # array 0-based, buttons 1-based
+            index = b - 1
+            if index >= 0 and index < len(games): 
                 break
             else:
                 hardware.beep()
-            hardware.wait(.1)
-            hardware.light_bad()
-            hardware.wait(.1)
+                hardware.write_message("Chose %d.  Try again" % b,"  Choose 1 - %d" % len(games))
+                hardware.wait(.1)
+                hardware.light_bad()
+                hardware.wait(.1)
 
         # game picked, construct it
-        game = games[b]() 
+        game = games[index]() 
 
         game.initialize(hardware,user)
 
+        hardware.write_message("Playing game",game.name)
         game.play()
         
         

@@ -132,7 +132,7 @@ class Hardware(object):
 		"""
 		pass
 		
-	def wait_for_button(self,expected_button,timeout_sec=0):
+	def wait_for_button(self,timeout_sec=0):
 		"""
 		Wait for a button to be pressed.  Will return
 		the button number that was pressed

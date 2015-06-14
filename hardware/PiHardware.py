@@ -78,7 +78,7 @@ class PiHardware(Base.Hardware):
         """
             cleanup on exit
         """
-            pass
+        io.cleanup()
     
     def reset(self):
         """
@@ -125,7 +125,7 @@ class PiHardware(Base.Hardware):
         """
         Put this number on the two-digit display
         """
-         self.sevenSegment.set_num(number)
+        self.sevenSegment.set_num(number)
  
     def display_characters(self,char1=' ',char2=' '):
         """
@@ -137,14 +137,14 @@ class PiHardware(Base.Hardware):
         """
         Sound the beeper
         """
-        self.beeper.flash(count,duration_sec,interval_sec)
+        self.beeper.flash(duration_sec,count,interval_sec)
             
-    def wait_for_button(self,expected_button,timeout_sec=0):
+    def wait_for_button(self,timeout_sec=0):
         """
-            Wait for a button to be pressed.  Will return
-            the button number that was pressed
+        Wait for a button to be pressed.  Will return
+        the button number that was pressed
         """
-        while not hit:
+        while True:
             for plate,b in enumerate(self.plates):
                 state = io.input(b)
                 
@@ -176,6 +176,7 @@ class PiHardware(Base.Hardware):
         """
         write a message to the two line display
         """
-        pass
+        print line1
+        if len(line2) > 0:
+            print line2
                 
-
