@@ -67,7 +67,7 @@ class TestHardware(Base.Hardware):
 
 		if duration_sec > 0:
 			time.sleep(duration_sec)
-			self.light_off(i)
+			self.light_off(-1)
 	
 	def light_off(self,number=-1):
 		"""
