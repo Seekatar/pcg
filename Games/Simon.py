@@ -27,7 +27,9 @@ class SimonSays(Base.Game):
 		self._pattern = []
 		
 		for i in range (self.PATTERN_LENGTH):
-			self._pattern.append(random.randint(0,9))
+			self._pattern.append(random.randint(1,9))
+
+		self.hardware.wait(.5)
 		
 	def play(self):
 		"""
@@ -40,6 +42,7 @@ class SimonSays(Base.Game):
 			
 			for j in range (i):
 				ledToLight = self._pattern[j]
+				print "lighting",ledToLight
 				self.hardware.light_on(ledToLight,.5)
 			
                         for j in range (i):
@@ -47,13 +50,16 @@ class SimonSays(Base.Game):
 				
 				b = self.hardware.wait_for_button()
 				if b != ledToLight: # wrong
+                                        print "Got wrong",b
 					self.hardware.beep(duration_sec=1)
 					return i - 1
 				else:
+                                        print "Got right",b
                                         self.hardware.light_on(ledToLight)
                                         self.hardware.beep(duration_sec=.1)
                                         					
-
+                        self.hardware.beep(2,.1)
+                        
 		return i - 1 
 					
                 
