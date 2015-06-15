@@ -111,12 +111,17 @@ class TestHardware(Base.Hardware):
 		Wait for a button to be pressed.  Will return
 		the button number that was pressed
 		"""
-		while True:
-                        c = msvcrt.getch()
-                        if c >= '1' and c <= '9':
-                                return int(c)
-                        else:
-                                self.beep()
+		start = time.clock()
+		while not msvcrt.kbhit():
+			time.sleep(.01)
+			if timeout_sec > 0 and time.clock() - start > timeout_sec:
+				return 0 # timed out
+				
+		c = msvcrt.getch()
+		if c >= '1' and c <= '9':
+				return int(c)
+		else:
+				self.beep()
 
         def blink_light_until_button(self, number, button, blink_on_sec, blink_off_sec ):
             """
@@ -133,14 +138,16 @@ class TestHardware(Base.Hardware):
                 print pos(14,0)+colorama.Fore.BLUE+colorama.Style.BRIGHT+line2+' '*(78-len(line2))
                 		
 if __name__ == '__main__':        
-	test = HardwareTest()
+	test = TestHardware()
 	score = 0
 	for i in range(1,10):
 		test.light_on(i)
-		j = test.wait_for_button()
+		j = test.wait_for_button(10)
 		if j == i:
 			test.light_good()
 			test.beep()
+		elif j == 0:
+			print 'timed out'
 		else:
 			score += 1
 			test.display_number(score)
