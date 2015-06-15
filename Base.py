@@ -72,6 +72,12 @@ class Hardware(object):
 	def self_test(self):
 		pass
 
+        def plate_count(self):
+                """
+                return the number of plates/leds in the hardware
+                """
+                pass
+                   
         def initialize(self):
                 """
                 do any one-time initialization

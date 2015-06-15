@@ -29,6 +29,12 @@ class TestHardware(Base.Hardware):
 	def self_test(self):
 		pass
 
+        def plate_count(self):
+                """
+                return the number of plates/leds in the hardware
+                """
+                return 9
+
         def cleanup(self):
                 print "\033[0m" # reset
                 print "\033[2J" # cls

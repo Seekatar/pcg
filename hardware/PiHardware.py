@@ -56,8 +56,12 @@ class PiHardware(Base.Hardware):
         self.leds = [ self.led1, self.led2, self.led3, self.led4, self.led5, self.led6, self.led7, self.led8, self.led9 ]
 
         self.plates = [ self.plate1, self.plate2, self.plate3, self.plate4, self.plate5, self.plate6, self.plate7, self.plate8, self.plate9 ]
-        for b in self.plates:
+
+        self.pressed_callbacks[ self.pressed1,self.pressed2, self.pressed3, self.pressed4, self.pressed5, self.pressed6, self.pressed7, self.pressed8, self.pressed9 ]
+
+        for (i,b) in enumerate(self.plates):
             io.setup(b,io.IN, pull_up_down=io.PUD_UP)
+            io.add_event_detect(b,GPIO.FALLING,callback=self.pressed_callbacks[i],bouncetime=200)
 
         self.sevenSegment = SevenSegment(2)
         self.beeper = Flasher(beeperNumber)
@@ -68,6 +72,8 @@ class PiHardware(Base.Hardware):
             self.beeper.test()
             self.ledArray.test()
 
+    def plate_count(self):
+        return len(self.leds();
         
     def reset(self):
         """
@@ -144,6 +150,7 @@ class PiHardware(Base.Hardware):
         Wait for a button to be pressed.  Will return
         the button number that was pressed
         """
+        io.add_event_detect(, GPIO.BOTH, callback=my_callback)
         while True:
             for plate,b in enumerate(self.plates):
                 state = io.input(b)
