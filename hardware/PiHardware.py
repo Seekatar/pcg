@@ -234,8 +234,8 @@ class PiHardware(Base.Hardware):
         """
         Sound the beeper
         """
-        # self.beeper.flash(duration_sec,count,interval_sec)
-        pass
+        self.beeper.flash(duration_sec,count,interval_sec)
+        
             
     def wait_for_button(self,timeout_sec=None):
         """

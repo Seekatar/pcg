@@ -127,6 +127,8 @@ def _main():
 
         hardware.write_message("Playing game",game.name)
         game.play()
+
+        hardware.beep(2,1)
         
         
 if __name__ == '__main__':

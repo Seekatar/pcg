@@ -13,7 +13,7 @@ class FixedRandomGame(Base.Game):
                                   'Jimmy Wallace',
                                   datetime.date(2015,6,14),
                                   '0.1')
-                self.LOOP_CNT = 5
+                self.LOOP_CNT = 20
 	
 	def initialize(self,hardware,user):
 		"""
