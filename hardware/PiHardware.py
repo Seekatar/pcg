@@ -4,6 +4,8 @@ import random
 import sys
 import os
 import Base
+import Queue
+import threading
 
 sys.path.append(os.path.join(os.path.dirname(__file__),'..','GpioUtil'))
 
@@ -66,6 +68,37 @@ class PiHardware(Base.Hardware):
         self.sevenSegment = SevenSegment(2)
         self.beeper = Flasher(beeperNumber)
         self.ledArray = CharliePlexer()
+        self._buttonQ = Queue.Queue()
+        self._event = threading.Event()
+        
+    def pressed1(self):
+        self._buttonQ.put(1)
+        self._event.set()
+    def pressed2(self):
+        self._buttonQ.put(2)
+        self._event.set()
+    def pressed3(self):
+        self._buttonQ.put(3)
+        self._event.set()
+    def pressed4(self):
+        self._buttonQ.put(4)
+        self._event.set()
+    def pressed5(self):
+        self._buttonQ.put(5)
+        self._event.set()
+    def pressed6(self):
+        self._buttonQ.put(6)
+        self._event.set()
+    def pressed7(self):
+        self._buttonQ.put(7)
+        self._event.set()
+    def pressed8(self):
+        self._buttonQ.put(8)
+        self._event.set()
+    def pressed9(self):
+        self._buttonQ.put(9)
+        self._event.set()
+        
 
     def self_test(self):
             self.sevenSegment.test()
@@ -73,7 +106,7 @@ class PiHardware(Base.Hardware):
             self.ledArray.test()
 
     def plate_count(self):
-        return len(self.leds();
+        return len(self.leds())
         
     def reset(self):
         """
@@ -145,23 +178,17 @@ class PiHardware(Base.Hardware):
         """
         self.beeper.flash(duration_sec,count,interval_sec)
             
-    def wait_for_button(self,timeout_sec=0):
+    def wait_for_button(self,timeout_sec=None):
         """
         Wait for a button to be pressed.  Will return
         the button number that was pressed
         """
-        io.add_event_detect(, GPIO.BOTH, callback=my_callback)
-        while True:
-            for plate,b in enumerate(self.plates):
-                state = io.input(b)
-                
-                if False: #DEBUG:
-                    print "state is",state,"for",b,"looking for",self.plates[self.ledToLight]
-                    
-                if state == io.LOW:
-                    # hit!
-                    return plate+1 # plate number is 1 based
-
+        try:
+            if self._event.wait(timeout_sec):           
+               e.clear()
+               return self._buttonQ.get_nowait()
+        except Queue.empty:
+           pass
 
     def blink_light_until_button(self, number, button, blink_on_sec =.1, blink_off_sec =.1):
         """
