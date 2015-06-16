@@ -69,6 +69,9 @@ class Hardware(object):
 	Note that for the lights, only one is on at a time, turning one on
 	will turn any other one off
 	"""
+	def __init__(self):
+                self.DEBUG = False
+                
 	def self_test(self):
 		pass
 
@@ -78,11 +81,11 @@ class Hardware(object):
                 """
                 pass
                    
-        def initialize(self):
+        def initialize(self,debugFlag):
                 """
                 do any one-time initialization
                 """
-                pass
+                self.DEBUG = debugFlag
 
         def cleanup(self):
                 """

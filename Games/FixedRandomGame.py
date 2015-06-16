@@ -13,7 +13,7 @@ class FixedRandomGame(Base.Game):
                                   'Jimmy Wallace',
                                   datetime.date(2015,6,14),
                                   '0.1')
-                self.LOOP_CNT = 20
+                self.LOOP_CNT = 5
 	
 	def initialize(self,hardware,user):
 		"""
@@ -32,12 +32,14 @@ class FixedRandomGame(Base.Game):
 		self.hardware.write_message('Press 1-9')
 				
 		for i in range(0,self.LOOP_CNT):
-			ledToLight = random.randint(0,9)
+			ledToLight = random.randint(1,9)
+			print "Game lighting",ledToLight
 			self.hardware.light_on(ledToLight)
 			
 			b = 0
 			while b != ledToLight:
 				b = self.hardware.wait_for_button()
+				print "Game got button",b
 				if b != ledToLight: # wrong
 					wrong += 1
 					self.hardware.display_number(wrong)

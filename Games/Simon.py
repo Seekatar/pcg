@@ -59,6 +59,7 @@ class SimonSays(Base.Game):
                                         self.hardware.beep(duration_sec=.1)
                                         					
                         self.hardware.beep(2,.1)
+                        self.hardware.wait(.3)
                         
 		return i - 1 
 					

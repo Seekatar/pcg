@@ -34,10 +34,11 @@ def _load_games():
     gameFolder = os.path.join(os.path.dirname(__file__),'Games')
     sys.path.append(gameFolder)
     print os.path.join(gameFolder,'*.py')
-    for f in  glob(os.path.join(gameFolder,'*.py')):
+    for f in  sorted(glob(os.path.join(gameFolder,'*.py')),key=str.lower):
         m = __import__(os.path.splitext(os.path.basename(f))[0])
         for i in dir(m):
             if not i.startswith('__') and isclass(m.__dict__[i]) and issubclass(m.__dict__[i],Game):
+                print "Added %s" % (i)
                 games.append(m.__dict__[i])
     return games
     
@@ -62,7 +63,7 @@ def _initialize():
         from PiHardware import PiHardware
         hardware = PiHardware()
 
-    hardware.initialize()
+    hardware.initialize(args.debug)
 
     # load games
     games = _load_games()
@@ -83,6 +84,7 @@ def _main():
     main loop
     """
     user = None
+    GAME_SELECT_DELAY = .4
     
     while True:
         hardware.reset()
@@ -92,18 +94,31 @@ def _main():
             
         # do game selection by good/bad light
         hardware.write_message("Waiting for a game selection","  Choose 1 - %d" % len(games))
+        selectCount = 0
         while True:
-            hardware.light_good()
-            b = hardware.wait_for_button() # array 0-based, buttons 1-based
-            index = b - 1
-            if index >= 0 and index < len(games): 
-                break
-            else:
-                hardware.beep()
-                hardware.write_message("Chose %d.  Try again" % b,"  Choose 1 - %d" % len(games))
-                hardware.wait(.1)
-                hardware.light_bad()
-                hardware.wait(.1)
+            # blink lights for available games
+            hardware.light_on(1+(selectCount % len(games)))
+            selectCount += 1
+            b = hardware.wait_for_button(.4) # array 0-based, buttons 1-based
+            if b == 9:
+                hardware.cleanup()
+                exit()
+                
+            if b > 0:
+                index = b - 1
+                if index >= 0 and index < len(games):
+                    # blink their choice
+                    for w in xrange(5):
+                        hardware.light_on(b,.1)
+                        hardware.light_off()
+                        hardware.wait(.1)
+                    break
+                else:
+                    hardware.beep()
+                    hardware.write_message("Chose %d.  Try again" % b,"  Choose 1 - %d" % len(games))
+                    hardware.wait(.1)
+                    hardware.light_bad()
+                    hardware.wait(.1)
 
         # game picked, construct it
         game = games[index]() 
