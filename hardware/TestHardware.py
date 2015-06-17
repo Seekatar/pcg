@@ -9,7 +9,7 @@ import msvcrt
 import colorama
 colorama.init()
 
-pos = lambda y, x: '\x1b[%d;%dH' % (y, x)
+pos = lambda y, x: '\033[%d;%dH' % (y, x)
 
 class TestHardware(Base.Hardware):
 
@@ -26,7 +26,7 @@ class TestHardware(Base.Hardware):
         self.light_good(0)
         self.light_bad(0)
         self.display_number(0)
-        
+
     def self_test(self):
         pass
 
@@ -49,25 +49,25 @@ class TestHardware(Base.Hardware):
         Turn on the 'bad' light for duration seconds, blocking
         """
         self.light_off(-1)
-        print pos(2,9)+colorama.Back.BLACK+colorama.Fore.RED+colorama.Style.BRIGHT+"\002"
+        print pos(2,9)+colorama.Back.BLACK+colorama.Fore.RED+colorama.Style.BRIGHT+"\002"+colorama.Style.RESET_ALL
         time.sleep(duration_sec)
-        print pos(2,9)+colorama.Fore.GREEN+colorama.Style.DIM+colorama.Fore.RED+"\002"
+        print pos(2,9)+colorama.Fore.GREEN+colorama.Style.DIM+colorama.Fore.RED+"\002"+colorama.Style.RESET_ALL
 
     def light_good(self,duration_sec=.5):
         """
         Turn on the 'good' light for duration seconds, blocking
         """
         self.light_off(-1)
-        print pos(2,17)+colorama.Back.BLACK+colorama.Fore.GREEN+colorama.Style.BRIGHT+"\002"    
+        print pos(2,17)+colorama.Back.BLACK+colorama.Fore.GREEN+colorama.Style.BRIGHT+"\002"+colorama.Style.RESET_ALL    
         time.sleep(duration_sec)
-        print pos(2,17)+colorama.Fore.GREEN+colorama.Style.DIM+"\002"   
+        print pos(2,17)+colorama.Fore.GREEN+colorama.Style.DIM+"\002"+colorama.Style.RESET_ALL   
 
     def light_on(self,number,duration_sec=0):
         """
         Turn on a light for duration seconds, blocking
         """
         if self._prev_light != number:
-            print colorama.Back.GREEN+colorama.Fore.GREEN+colorama.Style.BRIGHT+pos(5+2*(int((number-1)/3)),6+6*((number-1)%3))+" "+str((number-1)+1)+" "
+            print colorama.Back.GREEN+colorama.Fore.GREEN+colorama.Style.BRIGHT+pos(5+2*(int((number-1)/3)),6+6*((number-1)%3))+" "+str((number-1)+1)+" "+colorama.Style.RESET_ALL
             if self._prev_light > 0:
                     self.light_off(self._prev_light)
             self._prev_light = number
@@ -83,7 +83,7 @@ class TestHardware(Base.Hardware):
         if number == -1:
             number = self._prev_light
         if number > 0 and number < 10:
-                print colorama.Back.GREEN+colorama.Fore.BLACK+colorama.Style.DIM+pos(5+2*(int((number-1)/3)),6+6*((number-1)%3))+" "+str((number-1)+1)+" "
+                print colorama.Back.GREEN+colorama.Fore.BLACK+colorama.Style.DIM+pos(5+2*(int((number-1)/3)),6+6*((number-1)%3))+" "+str((number-1)+1)+" "+colorama.Style.RESET_ALL
         self._prev_light = -1
         
     def display_number(self,number):
@@ -97,7 +97,7 @@ class TestHardware(Base.Hardware):
         """
         Put these characters on the two-digit display
         """
-        print pos(11,12)+colorama.Fore.GREEN+colorama.Style.BRIGHT+colorama.Back.BLACK+colorama.Fore.RED+char1+char2
+        print pos(11,12)+colorama.Fore.GREEN+colorama.Style.BRIGHT+colorama.Back.BLACK+colorama.Fore.RED+char1+char2+colorama.Style.RESET_ALL
         
     def beep(self,count=1,duration_sec=.5,interval_sec=.3):
         """
@@ -142,8 +142,10 @@ class TestHardware(Base.Hardware):
             """
             write a message to the two line display
             """
-            print pos(13,0)+colorama.Fore.BLUE+colorama.Style.BRIGHT+line1+' '*(78-len(line1))
-            print pos(14,0)+colorama.Fore.BLUE+colorama.Style.BRIGHT+line2+' '*(78-len(line2))
+            print colorama.Style.RESET_ALL,pos(13,0)
+            print colorama.Fore.BLUE+colorama.Style.BRIGHT+line1+' '*(78-len(line1))
+            print pos(14,0),
+            print colorama.Fore.BLUE+colorama.Style.BRIGHT+line2+' '*(78-len(line2))
                         
 if __name__ == '__main__':        
     test = TestHardware()

@@ -33,7 +33,9 @@ class TestGame(Base.Game):
                     self.hardware.light_on(i)
                     b = 0
                     while b != i:
-                        b = self.hardware.wait_for_button()
+                        b = self.hardware.wait_for_button(5)
+                        if b == 0:
+                            break # timeout, go on   
                         if b != i: # wrong
                             wrong += 1
                             self.hardware.display_number(wrong)
