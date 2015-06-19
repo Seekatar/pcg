@@ -38,7 +38,7 @@ def _load_games():
         m = __import__(os.path.splitext(os.path.basename(f))[0])
         for i in dir(m):
             if not i.startswith('__') and isclass(m.__dict__[i]) and issubclass(m.__dict__[i],Game):
-                print "Added %s" % (i)
+                hardware.write_debug( "Added", i, "from",f)
                 games.append(m.__dict__[i])
     return games
     
@@ -67,6 +67,8 @@ def _initialize():
 
     # load games
     games = _load_games()
+    if args.debug:
+        raw_input("Press enter")
     
 def _get_user():
     """
@@ -94,6 +96,7 @@ def _main():
             
         # do game selection by good/bad light
         hardware.write_message("Waiting for a game selection","  Choose 1 - %d" % len(games))
+            
         selectCount = 0
         while True:
             # blink lights for available games
@@ -128,7 +131,7 @@ def _main():
         hardware.write_message("Playing game",game.name)
         game.play()
 
-        hardware.beep(2,1)
+        hardware.beep(2,.5)
         
         
 if __name__ == '__main__':

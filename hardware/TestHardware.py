@@ -17,6 +17,7 @@ class TestHardware(Base.Hardware):
     def __init__(self):
         self._prev_light = -1
         self.show_board()
+        self._debug_line = 16
 
     def show_board(self):
         self.cleanup()
@@ -26,7 +27,9 @@ class TestHardware(Base.Hardware):
         self.light_good(0)
         self.light_bad(0)
         self.display_number(0)
-
+        for i in range(15):
+            print
+            
     def self_test(self):
         pass
 
@@ -67,7 +70,7 @@ class TestHardware(Base.Hardware):
         Turn on a light for duration seconds, blocking
         """
         if self._prev_light != number:
-            print colorama.Back.GREEN+colorama.Fore.GREEN+colorama.Style.BRIGHT+pos(5+2*(int((number-1)/3)),6+6*((number-1)%3))+" "+str((number-1)+1)+" "+colorama.Style.RESET_ALL
+            print colorama.Back.GREEN+colorama.Fore.GREEN+colorama.Style.BRIGHT+pos(9-2*(int((number-1)/3)),6+6*((number-1)%3))+" "+str((number-1)+1)+" "+colorama.Style.RESET_ALL
             if self._prev_light > 0:
                     self.light_off(self._prev_light)
             self._prev_light = number
@@ -83,7 +86,7 @@ class TestHardware(Base.Hardware):
         if number == -1:
             number = self._prev_light
         if number > 0 and number < 10:
-                print colorama.Back.GREEN+colorama.Fore.BLACK+colorama.Style.DIM+pos(5+2*(int((number-1)/3)),6+6*((number-1)%3))+" "+str((number-1)+1)+" "+colorama.Style.RESET_ALL
+                print colorama.Back.GREEN+colorama.Fore.BLACK+colorama.Style.DIM+pos(9-2*(int((number-1)/3)),6+6*((number-1)%3))+" "+str((number-1)+1)+" "+colorama.Style.RESET_ALL
         self._prev_light = -1
         
     def display_number(self,number):
@@ -139,14 +142,24 @@ class TestHardware(Base.Hardware):
             self.hardware.wait(blink_off_sec)
 
     def write_message(self,line1,line2=""):
-            """
-            write a message to the two line display
-            """
-            print colorama.Style.RESET_ALL,pos(13,0)
-            print colorama.Fore.BLUE+colorama.Style.BRIGHT+line1+' '*(78-len(line1))
-            print pos(14,0),
-            print colorama.Fore.BLUE+colorama.Style.BRIGHT+line2+' '*(78-len(line2))
-                        
+        """
+        write a message to the two line display
+        """
+        print colorama.Style.RESET_ALL,pos(13,1)+colorama.Fore.BLUE+colorama.Style.BRIGHT+line1+' '*(78-len(line1))
+        print pos(14,1)+colorama.Fore.BLUE+colorama.Style.BRIGHT+line2+' '*(78-len(line2))
+
+    def write_debug(self,*msg):
+        m = ""
+        for i in msg:
+            m += str(i)+' '
+            
+        print pos(self._debug_line,1)+colorama.Fore.WHITE+m+'\n                             '
+        self._debug_line += 1
+        if self._debug_line > 30:
+            self._debug_line = 16
+        
+
+        
 if __name__ == '__main__':        
     test = TestHardware()
     score = 0

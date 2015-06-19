@@ -26,28 +26,38 @@ class GameData(object):
 	"""
 	Just the data members for a game
 	"""
-	def __init__(self,name,description,author,date,version):
+	def __init__(self):
+		self.game_id = None # database id
+		self.name = None
+		self.description = None
+		self.author = None
+		self.date = None
+		self.version = None
+                
+	def set_names(self,name,description,author,date,version):
 		self.game_id = None # database id
 		self.name = name
 		self.description = description
 		self.author = author
 		self.date = date
 		self.version = version
-	
+
+        
 class Game(GameData):
 	"""
 	Base class for games
 	"""
 	
 	def __init__(self,name,description,author,date,version):
-                super(Game,self).__init__(name,description,author,date,version)
-		
+                self.set_names(name,description,author,date,version)
+
 	def initialize(self,hardware,user):
 		"""
 		Initialize 
 		"""
 		self.hardware = hardware
 		self.user = user
+                self.DEBUG = hardware.DEBUG
 		
 	def play(self):
 		"""
@@ -163,6 +173,12 @@ class Hardware(object):
         def write_message(self,line1,line2=""):
                 """
                 write a message to the two line display
+                """
+                pass
+
+        def write_debug(self,*msg):
+                """
+                write a message out if debug set
                 """
                 pass
                 

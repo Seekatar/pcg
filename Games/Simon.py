@@ -35,31 +35,35 @@ class SimonSays(Base.Game):
 		"""
 		Implement to play game and return the score. 
 		"""
-				
-		self.hardware.write_message('Follow the pattern')
+
+		hw = self.hardware
+		
+		hw.write_message('Follow the pattern')
 				
 		for i in range(1,self.PATTERN_LENGTH +1):
 			
 			for j in range (i):
 				ledToLight = self._pattern[j]
-				print "lighting",ledToLight
-				self.hardware.light_on(ledToLight,.5)
+				hw.write_debug( "lighting",ledToLight)
+				hw.light_on(ledToLight,.5)
+				hw.light_off()
+				hw.wait(.1)
 			
                         for j in range (i):
 				ledToLight = self._pattern[j]
 				
-				b = self.hardware.wait_for_button()
+				b = hw.wait_for_button()
 				if b != ledToLight: # wrong
-                                        print "Got wrong",b
-					self.hardware.beep(duration_sec=1)
+                                        hw.write_debug( "Got wrong",b )
+					hw.beep(duration_sec=1)
 					return i - 1
 				else:
-                                        print "Got right",b
-                                        self.hardware.light_on(ledToLight)
-                                        self.hardware.beep(duration_sec=.1)
+                                        hw.write_debug( "Got right",b )
+                                        hw.light_on(ledToLight)
+                                        hw.beep(duration_sec=.1)
                                         					
-                        self.hardware.beep(2,.1)
-                        self.hardware.wait(.3)
+                        hw.beep(2,.1)
+                        hw.wait(.3)
                         
 		return i - 1 
 					
