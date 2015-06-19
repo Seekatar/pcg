@@ -170,18 +170,24 @@ class PiHardware(Base.Hardware):
         """
         reset between games
         """
+
+        return self
  
     def cleanup(self):
         """
             cleanup on exit
         """
         io.cleanup()
+
+        return self
     
     def reset(self):
         """
         reset between games
         """
         self.sevenSegment.set(' ',' ')
+
+        return self
    
     def light_bad(self,duration_sec=0):
         """
@@ -192,6 +198,8 @@ class PiHardware(Base.Hardware):
             time.sleep(duration_sec)
             self.light_off()
 
+        return self
+
     def light_good(self,duration_sec=0):
         """
         Turn on the 'good' light for duration seconds, blocking
@@ -201,6 +209,8 @@ class PiHardware(Base.Hardware):
             time.sleep(duration_sec)
             self.light_off()
             
+        return self
+
     def light_on(self,number,duration_sec=0):
         """
             Turn on a light for duration seconds, blocking
@@ -210,6 +220,8 @@ class PiHardware(Base.Hardware):
             if duration_sec > 0:
                 time.sleep(duration_sec)
                 self.light_off()
+
+        return self
             
     def light_off(self,number = -1):
         """
@@ -217,6 +229,7 @@ class PiHardware(Base.Hardware):
         """
         self.ledArray.light(-1)
 
+        return self
             
     def display_number(self,number):
         """
@@ -224,11 +237,15 @@ class PiHardware(Base.Hardware):
         """
         self.sevenSegment.set_num(number)
  
+        return self
+
     def display_characters(self,char1=' ',char2=' '):
         """
         Put these characters on the two-digit display
         """
         self.sevenSegment.set(char1,char2)
+
+        return self
             
     def beep(self,count=1,duration_sec=.5,interval_sec=.3):
         """
@@ -236,6 +253,7 @@ class PiHardware(Base.Hardware):
         """
         self.beeper.flash(duration_sec,count,interval_sec)
         
+        return self
             
     def wait_for_button(self,timeout_sec=None):
         """
@@ -249,21 +267,19 @@ class PiHardware(Base.Hardware):
         except Queue.Empty:
            pass
 
-    def blink_light_until_button(self, number, button, blink_on_sec =.1, blink_off_sec =.1):
+    def blink_light_until_button(self, number, button = -1, blink_on_sec =.3, blink_off_sec =.3):
         """
         blink a light until a button is pressed use -1 for button to return on any button
         """
-        if number < 1 or number > len(self.leds) or button < 1 or button > len(self.leds):
+        if number < 1 or number > len(self.leds) or button < -1 or button == 0 or button > len(self.leds):
             raise "Invalid parameter"
         
-        while True:
-            self.light_on(number)
-            pressButton = self.wait_for_button(button)
-            if button == -1 or pressButton == button:
-                return button
-            self.wait(blink_on_sec)
-            self.light_off()
-            self.wait(blink_off_sec)
+        pressButton = 0
+        while pressButton == 0:
+            pressButton = self.light_on(number).wait_for_button(blink_on_sec)
+            if pressButton != 0 and (button == -1 or pressButton == button):
+                return pressButton
+            self.light_off().wait(blink_off_sec)
     
     def write_message(self,line1,line2=""):
         """
@@ -273,3 +289,4 @@ class PiHardware(Base.Hardware):
         if len(line2) > 0:
             print line2
                 
+        return self

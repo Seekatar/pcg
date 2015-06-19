@@ -100,8 +100,8 @@ def _main():
         selectCount = 0
         while True:
             # blink lights for available games
-            hardware.light_on(1+(selectCount % len(games)))
             selectCount += 1
+            hardware.light_on(1+(selectCount % len(games)))
             b = hardware.wait_for_button(.4) # array 0-based, buttons 1-based
             if b == 9:
                 hardware.cleanup()
@@ -112,26 +112,27 @@ def _main():
                 if index >= 0 and index < len(games):
                     # blink their choice
                     for w in xrange(5):
-                        hardware.light_on(b,.1)
-                        hardware.light_off()
-                        hardware.wait(.1)
+                        hardware.light_on(b,.1)\
+                                 .light_off()\
+                                 .wait(.1)
                     break
                 else:
-                    hardware.beep()
-                    hardware.write_message("Chose %d.  Try again" % b,"  Choose 1 - %d" % len(games))
-                    hardware.wait(.1)
-                    hardware.light_bad()
-                    hardware.wait(.1)
+                    hardware.beep()\
+                             .write_message("Chose %d.  Try again" % b,"  Choose 1 - %d" % len(games))\
+                             .wait(.1)\
+                             .light_bad()\
+                             .wait(.1)
 
         # game picked, construct it
         game = games[index]() 
 
         game.initialize(hardware,user)
 
-        hardware.write_message("Playing game",game.name)
+        hardware.write_message("Playing game>",game.name)
         game.play()
 
         hardware.beep(2,.5)
+        hardware.blink_light_until_button(5)
         
         
 if __name__ == '__main__':
