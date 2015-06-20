@@ -8,12 +8,12 @@ class FixedRandomGame(Base.Game):
     """
     
     def __init__(self):
-        super(FixedRandomGame,self).__init__('Random touch game',
-                          'Game to test leds and buttons',
+        super(FixedRandomGame,self).__init__('Random',
+                          'Fixed number of random touches',
                           'Jimmy Wallace',
                           datetime.date(2015,6,14),
                           '0.1')
-        self.LOOP_CNT = 2
+        self.LOOP_CNT = 20
         self._timeout_sec = 10
         self._interval_sec = 0
         self._score = 0
@@ -34,7 +34,7 @@ class FixedRandomGame(Base.Game):
         """
         return True to end the game
         """
-        return False
+        return True
             
     def _hit(self,button):
         """
@@ -66,7 +66,7 @@ class FixedRandomGame(Base.Game):
         """
         Implement to play game and return the score. 
         """
-        wrong = 0
+        self._score = 0
 
         hw = self.hardware
         
@@ -80,16 +80,19 @@ class FixedRandomGame(Base.Game):
             b = 0
             while b != ledToLight:
                 b = hw.wait_for_button(self.get_timeout_sec())
-                hw.write_debug( "Game got button (0 is timeout)",b )
+                hw.write_debug( "Game got button",b,"expecting",ledToLight,"(0 is timeout)")
                 if b == 0: # timeout
                     if self._timeout(ledToLight):
+                        hw.write_debug("timed out")
                         break 
-                elif b != ledToLight: # wrong
+                elif b != ledToLight: # miss
                     if self._miss(ledToLight,b):
                         b = 0
+                        hw.write_debug("exiting with miss")
                         break
                 elif self._hit(b):
                     b = 0
+                    hw.write_debug("exiting with hit")
                     break
                 hw.wait(self._interval_sec)
 
@@ -99,7 +102,7 @@ class FixedRandomGame(Base.Game):
             hw.wait(.1)
             
                                 
-        return wrong
+        return self._score
                     
                                     
                                     

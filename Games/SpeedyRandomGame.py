@@ -10,7 +10,7 @@ class SpeedyRandomGame(__base):
     
     def __init__(self):
         super(SpeedyRandomGame,self).__init__()
-        self.set_names('Speedy touch game',
+        self.set_names('SpeedyTouch',
                           'Faster!',
                           'Jim Wallace',
                           datetime.date(2015,6,14),

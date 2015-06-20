@@ -78,7 +78,8 @@ def pressed9(channel):
     else:
         if DEBUG: print "false pressed 9 ",channel
 
-
+def button_pressed(channel):
+    PiHardware.me().pressed(channel)
 
 class PiHardware(Base.Hardware):
     """
@@ -144,7 +145,8 @@ class PiHardware(Base.Hardware):
 
         for (i,b) in enumerate(self.plates):
             io.setup(b,io.IN, pull_up_down=io.PUD_UP)
-            io.add_event_detect(b,io.FALLING,callback=self.pressed_callbacks[i],bouncetime=200)
+            io.add_event_detect(b,io.FALLING,\
+                                callback=button_pressed,bouncetime=200)
 
         self.sevenSegment = SevenSegment(2)
         self.beeper = Flasher(beeperNumber)
@@ -152,10 +154,16 @@ class PiHardware(Base.Hardware):
         self._buttonQ = Queue.Queue()
         self._event = threading.Event()
 
-    def pressed(self,button):
-        self._buttonQ.put(button)
-        self._event.set()
+    def pressed(self,channel):
+        button = self.plates.index(channel)+1
+        if not io.input(channel):
+            self.write_debug( "+ button",button," on channel ",channel )
+            self._buttonQ.put(button)
+            self._event.set()
+        else:
+            self.write_debug( "FALSE button",button," on channel ",channel )
         
+       
          
 
     def self_test(self):
@@ -266,6 +274,7 @@ class PiHardware(Base.Hardware):
                return self._buttonQ.get_nowait()
         except Queue.Empty:
            pass
+        return 0 # timeout
 
     def blink_light_until_button(self, number, button = -1, blink_on_sec =.3, blink_off_sec =.3):
         """
@@ -290,3 +299,10 @@ class PiHardware(Base.Hardware):
             print line2
                 
         return self
+
+    def write_debug(self,*msg):
+        m = ""
+        for i in msg:
+            m += str(i)+' '
+
+        print "DEBUG: "+m
