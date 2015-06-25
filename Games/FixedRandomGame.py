@@ -7,12 +7,19 @@ class FixedRandomGame(Base.Game):
     Game with a fixed set of random plates to touch
     """
     
+    def GameInfo():
+        """
+        return tuple of (name,desc,levels,author,date,version)
+        """
+        return ('Random',
+                'Fixed number of random touches',
+                5, #levels
+                'Jimmy Wallace',
+                datetime.date(2015,6,14),
+                '0.1')    
+    GameInfo = staticmethod(GameInfo) 
+
     def __init__(self):
-        super(FixedRandomGame,self).__init__('Random',
-                          'Fixed number of random touches',
-                          'Jimmy Wallace',
-                          datetime.date(2015,6,14),
-                          '0.1')
         self.LOOP_CNT = 20
         self._timeout_sec = 10
         self._interval_sec = 0
@@ -54,11 +61,11 @@ class FixedRandomGame(Base.Game):
         self.hardware.light_on(button)
         return False
 
-    def initialize(self,hardware,user):
+    def initialize(self,hardware,user,level):
         """
         Initialize 
         """
-        super(FixedRandomGame,self).initialize(hardware,user)
+        super(FixedRandomGame,self).initialize(hardware,user,level)
         
         self.hardware.display_number(0)
             

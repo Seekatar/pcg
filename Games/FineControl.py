@@ -8,13 +8,21 @@ class FineControl(__base):
     Game with a declining speed to hit the plates
     """
     
+    def GameInfo():
+        """
+        return tuple of (name,desc,levels,author,date,version)
+        """
+        return ("FineControl",               
+                "Tight patterns of plates", 
+                3, #levels
+                "Jim Wallace",
+                 datetime.date(2015,6,19),
+                 '0.1')
+    GameInfo = staticmethod(GameInfo) 
+    
     def __init__(self):
         super(FineControl,self).__init__()
-        self.set_names('FineControl',
-                          '4 plates in a pattern',
-                          'Jim Wallace',
-                          datetime.date(2015,6,19),
-                          '0.1')
+                    
         self._timeout_sec = 10
         self._interval_sec = 0
 

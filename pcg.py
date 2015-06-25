@@ -6,6 +6,7 @@ import os
 import signal
 from inspect import isclass
 from glob import glob
+import gc
 
 sys.path.append(os.path.join(os.path.dirname(__file__),'hardware'))
 sys.path.append(os.path.join(os.path.dirname(__file__),'Games'))
@@ -34,11 +35,14 @@ def _load_games():
     gameFolder = os.path.join(os.path.dirname(__file__),'Games')
     sys.path.append(gameFolder)
     print os.path.join(gameFolder,'*.py')
+    gameNum = 1
     for f in  sorted(glob(os.path.join(gameFolder,'*.py')),key=str.lower):
         m = __import__(os.path.splitext(os.path.basename(f))[0])
         for i in dir(m):
             if not i.startswith('__') and isclass(m.__dict__[i]) and issubclass(m.__dict__[i],Game):
-                hardware.write_debug( "Added", i, "from",f)
+                (name,description,levels,author,date,version) = m.__dict__[i].GameInfo()
+                hardware.write_debug( "Added", gameNum, name,"by",author,"with",levels,"levels from file",f)
+                gameNum += 1
                 games.append(m.__dict__[i])
     return games
     
@@ -89,6 +93,7 @@ def _main():
     GAME_SELECT_DELAY = .4
     
     while True:
+        gc.disable()
         hardware.reset()
 
         if user is None:
@@ -97,43 +102,34 @@ def _main():
         # do game selection by good/bad light
         hardware.write_message("Waiting for a game selection","  Choose 1 - %d" % len(games))
             
-        selectCount = 0
-        while True:
-            # blink lights for available games
-            selectCount += 1
-            hardware.light_on(1+(selectCount % len(games)))
-            b = hardware.wait_for_button(.4) # array 0-based, buttons 1-based
-            if b == 9:
-                hardware.cleanup()
-                exit()
-                
-            if b > 0:
-                index = b - 1
-                if index >= 0 and index < len(games):
-                    # blink their choice
-                    for w in xrange(5):
-                        hardware.light_on(b,.1)\
-                                 .light_off()\
-                                 .wait(.1)
-                    break
-                else:
-                    hardware.beep()\
-                             .write_message("Chose %d.  Try again" % b,"  Choose 1 - %d" % len(games))\
-                             .wait(.1)\
-                             .light_bad()\
-                             .wait(.1)
-
+        select = hardware.select_by_lights(len(games),9)
+        if b == 9:
+            hardware.cleanup()
+            exit()
+            
         # game picked, construct it
         game = games[index]() 
-
-        game.initialize(hardware,user)
+        level = 1
+        if game.levels > 1:
+            hardware.display_characters('L','E')
+            level = hardware.select_by_lights(len(games),9)
+        if level == 9:
+            continue
+        
+        hardware.display_number(0)
+        
+        game.initialize(hardware,user,level)
 
         hardware.write_message("Playing game>",game.name)
-        game.play()
-
+        start = time.clock()
+        score = game.play()
+        duration = time.clock() - start
+        
         hardware.beep(2,.5)
         hardware.blink_light_until_button(5)
         
+        gc.enable()
+        gc.collect()
         
 if __name__ == '__main__':
     
