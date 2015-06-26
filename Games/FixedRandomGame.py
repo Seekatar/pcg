@@ -5,6 +5,8 @@ import random
 class FixedRandomGame(Base.Game):
     """
     Game with a fixed set of random plates to touch
+    
+    Level n: n*10
     """
     
     def GameInfo():
@@ -25,6 +27,14 @@ class FixedRandomGame(Base.Game):
         self._interval_sec = 0
         self._score = 0
 
+    def initialize(self,hardware,user,level):
+        """
+        Initialize 
+        """
+        super(FixedRandomGame,self).initialize(hardware,user,level)
+        
+        self.LOOP_CNT = level*10
+        
     def get_next_plate(self):
         """
         override to change number of plates, etc.

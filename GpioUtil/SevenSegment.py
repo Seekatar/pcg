@@ -42,6 +42,18 @@ class SevenSegment:
                        'D':0x5e, # d
                        'E':0x79, # E
                        'F':0x71, # F
+                       # g?
+                       'H':0x76,
+                       'I':0x10, # i
+                       'J':0x0e,
+                       'L':0x38, # L
+                       'N':0x54, # n
+                       'O':0x5c, # o
+                       'P':0x73, # P
+                       'R':0x50, # r
+                       'S':0x6d, # S
+                       'U':0x1c, # u
+                       'Y':0x6e, # Y
                        '-':0x40, # -
                          1:0x01, # top
                          2:0x02, # upper rt  
@@ -75,7 +87,7 @@ class SevenSegment:
         time.sleep(.001)
         io.output(self._latch, io.LOW)
 
-    def set(self,char1ToSet,char2ToSet=None):
+    def set(self,char1ToSet,char2ToSet=' '):
         """
         Set a character on the display
         Valid values are 0-9, A-F, ., -, and numbers 1-0x40 in multiples of 2
@@ -85,9 +97,16 @@ class SevenSegment:
         if char2ToSet >= 'a' and char2ToSet <= 'z':
             char2ToSet = char2ToSet.upper()
         
-        self._hc595_shift(SevenSegment.SegCodes[char1ToSet])
-        if char2ToSet != None and self._leds > 1:
-            self._hc595_shift(SevenSegment.SegCodes[char2ToSet])
+        char1 = SevenSegment.SegCodes[' ']
+        char2 = SevenSegment.SegCodes[' ']
+        
+        if char1ToSet in SevenSegment.SegCodes.keys():
+            char1 = SevenSegment.SegCodes[char1ToSet]
+        if char2ToSet in SevenSegment.SegCodes.keys():
+            char2 = SevenSegment.SegCodes[char2ToSet]
+        self._hc595_shift(char1)
+        self._hc595_shift(char2)
+            
         self._hc595_latch()
 
     def set_num(self,num):
@@ -149,6 +168,13 @@ if __name__ == '__main__':
     print "Testing...."
     io.setmode(io.BOARD)
     s = SevenSegment(2)
+    s.set('H','I')
+    x = raw_input('press a key')
+    while x != 'z':
+        s.set(x)
+        x = raw_input('press a key')
+        
+        
     for i in range(0,100):
         s.set_num(i)
         time.sleep(.05)

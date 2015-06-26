@@ -6,6 +6,10 @@ from FixedRandomGame import FixedRandomGame as __base
 class SpeedyRandomGame(__base):
     """
     Game with a declining speed to hit the plates
+    
+    Level 1: 95% time each level
+    Level 2: 85% 
+    Level 3: 75% 
     """
     
     def GameInfo():
@@ -14,7 +18,7 @@ class SpeedyRandomGame(__base):
         """
         return ('SpeedyTouch',
                   'Faster!',
-                  1,
+                  3,
                   'Jim Wallace',
                   datetime.date(2015,6,14),
                   '0.1')
@@ -26,13 +30,24 @@ class SpeedyRandomGame(__base):
         self.LOOP_CNT = 100
         self._timeout_sec = 2
         self._interval_sec = 2
+        self._interval_decrease = .95
 
-
+    def initialize(self,hardware,user,level):
+        """
+        Initialize 
+        """
+        super(SpeedyRandomGame,self).initialize(hardware,user,level)
+        
+        self._interval_decrease = 1 - (.05*level)
+        
+        self.hardware.write_debug("decrease amount is",self._interval_decrease)
+        
+        
     def get_timeout_sec(self):
         """
         override to adjust timeout each time they touch
         """
-        self._interval_sec *= .95
+        self._interval_sec *= self._interval_decrease
         self.hardware.write_debug("now",self._interval_sec,self.LOOP_CNT)
         return self._interval_sec
     

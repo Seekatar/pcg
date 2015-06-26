@@ -6,6 +6,10 @@ from FixedRandomGame import FixedRandomGame as __base
 class FineControl(__base):
     """
     Game with a declining speed to hit the plates
+    
+    Level 1: clockwise 5 times
+    Level 2: anti clockwise 5 times
+    Level 3: repeat 4 clockwise, anticlockwise, diagonal1, diagonal2
     """
     
     def GameInfo():
@@ -32,13 +36,30 @@ class FineControl(__base):
         self._anticlockwise = self._clockwise[::-1] #reverse
         self._diagonal1 = (1,5)
         self._diagonal2 = (2,4)
-
-        repeat = 4
-        self._pattern = self._clockwise*repeat+self._anticlockwise*repeat+self._diagonal1*repeat+self._diagonal2*repeat
         
+        self._pattern = None
         self._pattern_index = -1
-        self.LOOP_CNT = len(self._pattern)
+        self.LOOP_CNT = 0
+
+    def initialize(self,hardware,user,level):
+        """
+        Initialize 
+        """
+        super(FineControl,self).initialize(hardware,user,level)
         
+        if self.level == 1:    
+            self._pattern = self._clockwise*5
+        elif self.level == 2:
+            self._pattern = self._anticlockwise*5
+        else:    
+            repeat = 4
+            self._pattern = self._clockwise*repeat+self._anticlockwise*repeat+self._diagonal1*repeat+self._diagonal2*repeat
+            
+        # index for next plate
+        self._pattern_index = -1
+            
+        self.LOOP_CNT = len(self._pattern)
+       
     def get_next_plate(self):
         """
         override to change number of plates, etc.

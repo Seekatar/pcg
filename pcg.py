@@ -81,7 +81,7 @@ def _get_user():
     u = User()
     u.first_name = 'Jimmy'
     u.last_name = 'Wallace'
-    u.email = 'xeekatar@gmal.com'
+    u.email = 'xeekatar@gmail.com'
     u.pin = '1234'
     return u
 
@@ -100,19 +100,22 @@ def _main():
             user = _get_user()
             
         # do game selection by good/bad light
-        hardware.write_message("Waiting for a game selection","  Choose 1 - %d" % len(games))
+        hardware.write_message("Waiting for a game selection","  Choose 1 - %d" % len(games)).\
+                display_characters('H','I')
             
         select = hardware.select_by_lights(len(games),9)
-        if b == 9:
+        if select == 9:
+            hardware.display_characters('B','Y')
             hardware.cleanup()
             exit()
             
         # game picked, construct it
-        game = games[index]() 
+        (name,description,levels,author,date,ver) = games[select-1].GameInfo()
+        game = games[select-1]() 
         level = 1
-        if game.levels > 1:
+        if levels > 1:
             hardware.display_characters('L','E')
-            level = hardware.select_by_lights(len(games),9)
+            level = hardware.select_by_lights(levels,9)
         if level == 9:
             continue
         
@@ -120,7 +123,8 @@ def _main():
         
         game.initialize(hardware,user,level)
 
-        hardware.write_message("Playing game>",game.name)
+        hardware.write_message("Playing game>",name)
+        hardware.write_debug(description,'by',author)
         start = time.clock()
         score = game.play()
         duration = time.clock() - start
