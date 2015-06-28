@@ -306,3 +306,5 @@ class PiHardware(Base.Hardware):
             m += str(i)+' '
 
         print "DEBUG: "+m
+        
+        return self

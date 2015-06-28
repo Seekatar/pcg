@@ -3,13 +3,17 @@ import datetime
 import random
 from FixedRandomGame import FixedRandomGame as __base
 
+# use __base, otherwise when searching for games, FixedRandomGame shows up multiple times
 class FineControl(__base):
     """
-    Game with a declining speed to hit the plates
+    Touch four plates in patterns as fast as you can.
     
-    Level 1: clockwise 5 times
-    Level 2: anti clockwise 5 times
-    Level 3: repeat 4 clockwise, anticlockwise, diagonal1, diagonal2
+    Level 1: tight, clockwise 5 times
+    Level 2: tight, anti clockwise 5 times
+    Level 3: tight, repeat 4 each: clockwise, anticlockwise, diagonal1, diagonal2
+    Level 4: wide, clockwise 5 times
+    Level 5: wide, anti clockwise 5 times
+    Level 6: wide, repeat 4 each: clockwise, anticlockwise, diagonal1, diagonal2
     """
     
     def GameInfo():
@@ -18,25 +22,29 @@ class FineControl(__base):
         """
         return ("FineControl",               
                 "Tight patterns of plates", 
-                3, #levels
+                6, #levels
                 "Jim Wallace",
                  datetime.date(2015,6,19),
                  '0.1')
     GameInfo = staticmethod(GameInfo) 
+
+   # patterns
+    _clockwise = (1,2,5,4)
+    _anticlockwise = _clockwise[::-1] #reverse
+    _diagonal1 = (1,5)
+    _diagonal2 = (2,4)
     
+    _wclockwise = (1,3,9,7)
+    _wanticlockwise = _wclockwise[::-1] #reverse
+    _wdiagonal1 = (1,9)
+    _wdiagonal2 = (3,7)
+                
     def __init__(self):
         super(FineControl,self).__init__()
                     
         self._timeout_sec = 10
         self._interval_sec = 0
-
-
-        # pattern
-        self._clockwise = (1,2,5,4)
-        self._anticlockwise = self._clockwise[::-1] #reverse
-        self._diagonal1 = (1,5)
-        self._diagonal2 = (2,4)
-        
+ 
         self._pattern = None
         self._pattern_index = -1
         self.LOOP_CNT = 0
@@ -48,13 +56,20 @@ class FineControl(__base):
         super(FineControl,self).initialize(hardware,user,level)
         
         if self.level == 1:    
-            self._pattern = self._clockwise*5
+            self._pattern = FineControl._clockwise*5
         elif self.level == 2:
-            self._pattern = self._anticlockwise*5
+            self._pattern = FineControl._anticlockwise*5
+        elif self.level == 3:    
+            repeat = 4
+            self._pattern = FineControl._clockwise*repeat+FineControl._anticlockwise*repeat+FineControl._diagonal1*repeat+FineControl._diagonal2*repeat
+        elif self.level == 4:    
+            self._pattern = FineControl._wclockwise*5
+        elif self.level == 5:
+            self._pattern = FineControl._wanticlockwise*5
         else:    
             repeat = 4
-            self._pattern = self._clockwise*repeat+self._anticlockwise*repeat+self._diagonal1*repeat+self._diagonal2*repeat
-            
+            self._pattern = FineControl._wclockwise*repeat+FineControl._wanticlockwise*repeat+FineControl._wdiagonal1*repeat+FineControl._wdiagonal2*repeat
+        
         # index for next plate
         self._pattern_index = -1
             
@@ -66,28 +81,3 @@ class FineControl(__base):
         """
         self._pattern_index += 1
         return self._pattern[self._pattern_index]
-
-    def _hit(self,button):
-        """
-        return True to end the game
-        """
-        self._score += 1
-        self.hardware.display_number(self._score)\
-                    .light_good(.2)
-        return False
-
-    def _miss(self,button,missed_button):
-        """
-        return True to end the game
-        """
-        self._score -= 1
-        self.hardware.display_number(self._score)\
-                    .light_bad()\
-                    .beep(duration_sec=.2)\
-                    .light_on(button)
-        return False
-        
-                                    
-                                    
-            
-          

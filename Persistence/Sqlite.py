@@ -16,6 +16,7 @@ class SqlitePersistence(Persistence):
         
     def load(self):
         self._conn = sqlite3.connect(os.path.join(os.path.dirname(__file__),'pcg.db'))
+        self._create()
         
     def close(self):
         """
@@ -37,6 +38,7 @@ class SqlitePersistence(Persistence):
          CREATE TABLE  IF NOT EXISTS SCORE
             (SCORE_ID  INTEGER primary key,
              GAME_NAME TEXT NOT NULL,
+             GAME_VERSION TEXT NOT NULL,
              LEVEL INTEGER NOT NULL,
              USER_ID  INTEGER not null,
              TIMESTAMP datetime not null,
@@ -54,8 +56,8 @@ class SqlitePersistence(Persistence):
         VALUES ('U.N.','Owen','ANONYMOUS','')
         """
     INSERT_SCORE = """
-        INSERT INTO SCORE ( GAME_NAME, LEVEL, USER_ID, TIMESTAMP, SCORE,DURATION_SEC,CRASHED)
-        VALUES(?,?,?,?,?,?,1)
+        INSERT INTO SCORE ( GAME_NAME, GAME_VERSION, LEVEL, USER_ID, TIMESTAMP, SCORE,DURATION_SEC,CRASHED)
+        VALUES(?,?,?,?,?,?,?,1)
         """      
           
     UPDATE_SCORE = """
@@ -86,8 +88,7 @@ class SqlitePersistence(Persistence):
         """
         c = self._conn.cursor()
         c.execute(SqlitePersistence.GET_ANONYMOUS)
-        x = c.fetchone()
-        return User(x)
+        return User().load_from_tuple(c.fetchone())
                 
     def save_score_start(self,score,user):
         """
@@ -96,6 +97,7 @@ class SqlitePersistence(Persistence):
         c = self._conn.cursor()
         c.execute(SqlitePersistence.INSERT_SCORE,
             (score.game_name,
+            score.game_version,
             score.level,
             user.user_id,
             score.timestamp,
@@ -119,7 +121,7 @@ class SqlitePersistence(Persistence):
         
     def scores(self):
         c = self._conn.cursor()
-        c.execute('SELECT SCORE_ID, SCORE, DURATION_SEC, GAME_NAME, LEVEL, USER_ID, TIMESTAMP, CRASHED FROM SCORE ORDER BY SCORE_ID DESC')
+        c.execute('SELECT SCORE_ID, SCORE, DURATION_SEC, GAME_NAME, GAME_VERSION, LEVEL, USER_ID, TIMESTAMP, CRASHED FROM SCORE ORDER BY SCORE_ID DESC')
         ret = []
         r = c.fetchone()
         while r is not None:

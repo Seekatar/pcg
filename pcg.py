@@ -32,7 +32,7 @@ hardware = None
 persistence = None
 games = []
 
-def _load_games():
+def _load_games(printOut):
     """
     load all the game classes in the Games folder
     """
@@ -47,8 +47,14 @@ def _load_games():
             if not i.startswith('__') and isclass(m.__dict__[i]) and issubclass(m.__dict__[i],Game):
                 (name,description,levels,author,date,version) = m.__dict__[i].GameInfo()
                 hardware.write_debug( "Added", gameNum, name,"by",author,"with",levels,"levels from file",f)
-                gameNum += 1
                 games.append(m.__dict__[i])
+                
+                if printOut:
+                    print "Game %d %s with %d levels:" % (gameNum,name,levels)
+                    print games[gameNum-1].__doc__
+                    
+                gameNum += 1
+
     return games
     
 def _initialize():
@@ -62,6 +68,7 @@ def _initialize():
     parser = argparse.ArgumentParser(description='Point Control Game by Jimmy Wallace')
     parser.add_argument('-t','--test',action='store_true',help='run the simulator instead of on Pi hardware')
     parser.add_argument('-d','--debug',action='store_true',help='show debug message on console')
+    parser.add_argument('-l','--list',action='store_true',help='list all the games')
 
     args = parser.parse_args()
 
@@ -80,21 +87,14 @@ def _initialize():
     persistence.load()
 
     # load games
-    games = _load_games()
-    if args.debug:
-        raw_input("Press enter")
-    
-def _get_user():
-    """
-    get a user 
-    """
-    u = User()
-    u.first_name = 'Jimmy'
-    u.last_name = 'Wallace'
-    u.email = 'xeekatar@gmail.com'
-    u.pin = '1234'
-    return u
+    games = _load_games(args.list)
 
+    if args.list:
+        exit ()
+            
+    if args.debug:
+        raw_input("Press enter")    
+        
 def _main():
     """
     main loop
@@ -136,7 +136,7 @@ def _main():
         hardware.write_message("Playing game>",name)
         hardware.write_debug(description,'by',author)
         
-        score = Score().load_at_start(name,level,user)
+        score = Score().load_at_start(name,ver,level,user)
         persistence.save_score_start(score,user)
         
         start = time.clock()

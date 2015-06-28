@@ -11,12 +11,13 @@ class User(object):
         self.email = None
         self.pin = None
         
-    def __init__(self,user):
+    def load_from_tuple(self,user):
         self.user_id = user[0]
         self.first_name = user[1]
         self.last_name = user[2]
         self.email = user[3]
         self.pin = user[4]
+        return self
         
 class Score(object):
     """
@@ -29,14 +30,16 @@ class Score(object):
         self.level = 1
         self.user_id = None
         self.game_name = None
+        self.game_version = None
         self.timestamp = None
         self.crashed = True
         
-    def load_at_start(self,game_name,level,user):
+    def load_at_start(self,game_name,game_version,level,user):
         self.score_id = None # database id
         self.score = 0
         self.duration_sec = 0.0
         self.game_name = game_name
+        self.game_version = game_version
         self.level = level
         self.user_id = user.user_id
         self.timestamp = time.strftime('%Y-%m-%d %H:%M:%S.000')
@@ -48,10 +51,11 @@ class Score(object):
         self.score = scoreTuple[1]
         self.duration_sec = scoreTuple[2]
         self.game_name = scoreTuple[3]
-        self.level = scoreTuple[4]
-        self.user_id = scoreTuple[5]
-        self.timestamp = scoreTuple[6]
-        self.crashed = scoreTuple[7]
+        self.game_version = scoreTuple[4]
+        self.level = scoreTuple[5]
+        self.user_id = scoreTuple[6]
+        self.timestamp = scoreTuple[7]
+        self.crashed = scoreTuple[8]
         return self
                         
 class GameData(object):

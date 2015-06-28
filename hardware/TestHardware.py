@@ -60,6 +60,7 @@ class TestHardware(Base.Hardware):
 
     def reset(self):
             if self.DEBUG:
+                self.write_debug("Game ended")
                 raw_input("Debug mode:  Press enter to continue")
             self.show_board()
             print "\033[0m" # reset
@@ -188,14 +189,15 @@ class TestHardware(Base.Hardware):
         return self
 
     def write_debug(self,*msg):
-        m = ""
-        for i in msg:
-            m += str(i)+' '
-            
-        print pos(self._debug_line,1)+colorama.Fore.WHITE+m+'\n                             '
-        self._debug_line += 1
-        if self._debug_line > 30:
-            self._debug_line = 16
+        if self.DEBUG:
+            m = ""
+            for i in msg:
+                m += str(i)+' '
+                
+            print pos(self._debug_line,1)+colorama.Fore.WHITE+m+'\n                             '
+            self._debug_line += 1
+            if self._debug_line > 30:
+                self._debug_line = 16
         
         return self
 

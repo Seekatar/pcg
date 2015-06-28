@@ -6,7 +6,7 @@ class FixedRandomGame(Base.Game):
     """
     Game with a fixed set of random plates to touch
     
-    Level n: n*10
+    Level n: n*10 plates
     """
     
     def GameInfo():
@@ -57,18 +57,22 @@ class FixedRandomGame(Base.Game):
         """
         return True to end the game
         """
-        self.hardware.light_good(.2)
+        self._score += 1
+        self.hardware.display_number(self._score)\
+            .light_good(.2)
+            
         return False
 
     def _miss(self,button,missed_button):
         """
         return True to end the game
         """
-        self._score += 1
-        self.hardware.display_number(self._score)
-        self.hardware.light_bad()
-        self.hardware.beep(duration_sec=.2)
-        self.hardware.light_on(button)
+        if self._score > 0:
+            self._score -= 1
+        self.hardware.display_number(self._score)\
+            .light_bad()\
+            .beep(duration_sec=.2)\
+            .light_on(button)
         return False
 
     def initialize(self,hardware,user,level):
