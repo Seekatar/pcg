@@ -1,15 +1,15 @@
-import Base
+import base
 import datetime
 import random
 from FixedRandomGame import FixedRandomGame as __base
 
 class SpeedyRandomGame(__base):
     """
-    Game with a declining speed to hit the plates
+    Game with a declining time to hit the plates
     
-    Level 1: 95% time each level
-    Level 2: 85% 
-    Level 3: 75% 
+    Level 1: 5% decrease after each touch
+    Level 2: 15% decrease after each touch
+    Level 3: 25% decrease after each touch
     """
     
     def GameInfo():
@@ -50,29 +50,5 @@ class SpeedyRandomGame(__base):
         self._interval_sec *= self._interval_decrease
         self.hardware.write_debug("now",self._interval_sec,self.LOOP_CNT)
         return self._interval_sec
-    
-    def _timeout(self,button):
-        """
-        return True to end the game
-        """
-        return True
-    
-    def _hit(self,button):
-        """
-        return True to end the game
-        """
-        self._score += 1
-        self.hardware.light_good(.2)\
-                     .display_number(self._score)
-        
-        return False
 
-    def _miss(self,button,missed_button):
-        """
-        return True to end the game
-        """
-        self.hardware.light_bad()\
-                .beep(duration_sec=.2)\
-                .light_on(button)
-        
-        return False
+

@@ -1,7 +1,7 @@
-import Base
+import base
 import datetime
 
-class TestGame(Base.Game):
+class TestGame(base.Game):
     """
     Simple test game that lights all panels waiting for a hit
     """
@@ -33,7 +33,7 @@ class TestGame(Base.Game):
         """
         Implement to play your game.  Return the score
         """
-        wrong = 0
+        self._score = 0
     
         self.hardware.write_message('Press 1-9')
                 
@@ -43,18 +43,21 @@ class TestGame(Base.Game):
             while b != i:
                 b = self.hardware.wait_for_button(5)
                 if b == 0:
-                    break # timeout, go on   
+                    break # timeout, go on to next number
                 if b != i: # wrong
-                    wrong += 1
-                    self.hardware.display_number(wrong)
-                    self.hardware.light_bad()
-                    self.hardware.beep(duration_sec=.2)
-                    self.hardware.light_on(i)
+                    if self._score > 0:
+                        self._score -= 1
+                    self.hardware.display_number(self._score)\
+                                 .light_bad()\
+                                 .beep(duration_sec=.2)\
+                                 .light_on(i)
+            self._score += 1
+            self.hardware.display_number(self._score)
                         
         # game over
         self.hardware.light_off()
-        self.hardware.beep(duration_sec=1)
-        return wrong
+                     
+        return self._score
                 
 
         

@@ -1,12 +1,12 @@
-import Base
+import base
 import datetime
 import random
 
-class FixedRandomGame(Base.Game):
+class FixedRandomGame(base.Game):
     """
     Game with a fixed set of random plates to touch
     
-    Level n: n*10
+    Level n: n*10 plates
     """
     
     def GameInfo():
@@ -57,18 +57,22 @@ class FixedRandomGame(Base.Game):
         """
         return True to end the game
         """
-        self.hardware.light_good(.2)
+        self._score += 1
+        self.hardware.display_number(self._score)\
+            .light_good(.2)
+            
         return False
 
     def _miss(self,button,missed_button):
         """
         return True to end the game
         """
-        self._score += 1
-        self.hardware.display_number(self._score)
-        self.hardware.light_bad()
-        self.hardware.beep(duration_sec=.2)
-        self.hardware.light_on(button)
+        if self._score > 0:
+            self._score -= 1
+        self.hardware.display_number(self._score)\
+            .light_bad()\
+            .beep(duration_sec=.2)\
+            .light_on(button)
         return False
 
     def initialize(self,hardware,user,level):
@@ -90,24 +94,26 @@ class FixedRandomGame(Base.Game):
         hw.write_message('Press 1-9')
                         
         for i in range(0,self.LOOP_CNT):
+            b = 0
             ledToLight = self.get_next_plate()
-            hw.write_debug( "Game lighting",ledToLight )
+            timeout = self.get_timeout_sec()
+            hw.write_debug( "Game lighting",ledToLight," and waiting",timeout )
             hw.light_on(ledToLight)
             
-            b = 0
             while b != ledToLight:
-                b = hw.wait_for_button(self.get_timeout_sec())
+                b = hw.wait_for_button(timeout)
                 hw.write_debug( "Game got button",b,"expecting",ledToLight,"(0 is timeout)")
                 if b == 0: # timeout
-                    if self._timeout(ledToLight):
+                    if self._timeout(ledToLight): # should we exit on timeout?
+                        hw.light_bad()
                         hw.write_debug("timed out")
                         break 
                 elif b != ledToLight: # miss
-                    if self._miss(ledToLight,b):
+                    if self._miss(ledToLight,b): # should we exit on miss?
                         b = 0
                         hw.write_debug("exiting with miss")
                         break
-                elif self._hit(b):
+                elif self._hit(b): # should we exit on hit?
                     b = 0
                     hw.write_debug("exiting with hit")
                     break

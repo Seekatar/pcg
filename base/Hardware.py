@@ -1,67 +1,5 @@
 import time
 
-class User(object):
-    """
-    Simple user, date only for easy storing in database
-    """
-    def __init__(self):
-        self.user_id = None # database id
-        self.first_name = None
-        self.last_name = None
-        self.email = None
-        self.pin = None
-
-class Score(object):
-    """
-    Simple score object for easy storing in database
-    """
-    def __init__(self):
-        self.id = None # database id
-        self.score = 0
-        self.duration_sec = 0.0
-        self.level = 1
-        self.user_id = None
-        self.game_id = None
-        self.timestamp = None
-        self.crashed = True
-                
-class GameData(object):
-    """
-    Just the data members for a game
-    """
-    def __init__(self):
-        return self
-                
-class Game(GameData):
-    """
-    Base class for games
-    """
-    
-    def __init__(self):
-        self.level = 1
-
-    def initialize(self,hardware,user,level):
-        """
-        Initialize 
-        """
-        self.level = level
-        self.hardware = hardware
-        self.user = user
-        self.DEBUG = hardware.DEBUG
-        
-    def play(self):
-        """
-        Implement to play your game.  Return the score
-        """
-        pass
-
-    def cleanup(self):
-        """
-        Implement to cleanup your game in case it was interrupted
-        """
-        pass
-        
-
 class Hardware(object):
     """
     Abstraction of the hardware
@@ -206,4 +144,3 @@ class Hardware(object):
         return b
 
 
-            

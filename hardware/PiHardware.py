@@ -3,7 +3,7 @@ import time
 import random
 import sys
 import os
-import Base
+import base
 import Queue
 import threading
 
@@ -15,73 +15,10 @@ from CharliePlexer import CharliePlexer
 
 DEBUG = True
 
-def pressed1(channel):
-    if not io.input(channel):
-        if DEBUG: print "pressed 1",channel
-        PiHardware.me().pressed(1)
-    else:
-        if DEBUG: print "false pressed 1 ",channel
-    
-def pressed2(channel):
-    if not io.input(channel):
-        if DEBUG: print "pressed 2",channel
-        PiHardware.me().pressed(2)
-    else:
-        if DEBUG: print "false pressed 2 ",channel
-    
-def pressed3(channel):
-    if not io.input(channel):
-        if DEBUG: print "pressed 3 ",channel
-        PiHardware.me().pressed(3)
-    else:
-        if DEBUG: print "false pressed 3 ",channel
-    
-def pressed4(channel):
-    if not io.input(channel):
-        if DEBUG: print "pressed 4",channel
-        PiHardware.me().pressed(4)
-    else:
-        if DEBUG: print "false pressed 4 ",channel
-    
-def pressed5(channel):
-    if not io.input(channel):
-        if DEBUG: print "pressed 5",channel
-        PiHardware.me().pressed(5)
-    else:
-        if DEBUG: print "false pressed 5 ",channel
-    
-def pressed6(channel):
-    if not io.input(channel):
-        if DEBUG: print "pressed 6",channel
-        PiHardware.me().pressed(6)
-    else:
-        if DEBUG: print "false pressed 6 ",channel
-    
-def pressed7(channel):
-    if not io.input(channel):
-        if DEBUG: print "pressed 7",channel
-        PiHardware.me().pressed(7)
-    else:
-        if DEBUG: print "false pressed 7 ",channel
-    
-def pressed8(channel):
-    if not io.input(channel):
-        if DEBUG: print "pressed 8",channel
-        PiHardware.me().pressed(8)
-    else:
-        if DEBUG: print "false pressed 8 ",channel
-    
-def pressed9(channel):
-    if not io.input(channel):
-        if DEBUG: print "pressed 9",channel
-        PiHardware.me().pressed(9)
-    else:
-        if DEBUG: print "false pressed 9 ",channel
-
 def button_pressed(channel):
     PiHardware.me().pressed(channel)
 
-class PiHardware(Base.Hardware):
+class PiHardware(base.Hardware):
     """
     RaspberryPi RPi.GPIO implementation of the hardware
     """
@@ -140,13 +77,10 @@ class PiHardware(Base.Hardware):
 
         self.plates = [ self.plate1, self.plate2, self.plate3, self.plate4, self.plate5, self.plate6, self.plate7, self.plate8, self.plate9 ]
 
-        self.pressed_callbacks = [ pressed1,pressed2, pressed3, pressed4,
-                                pressed5, pressed6, pressed7, pressed8, pressed9 ]
-
         for (i,b) in enumerate(self.plates):
             io.setup(b,io.IN, pull_up_down=io.PUD_UP)
             io.add_event_detect(b,io.FALLING,\
-                                callback=button_pressed,bouncetime=200)
+                                callback=button_pressed,bouncetime=100) 
 
         self.sevenSegment = SevenSegment(2)
         self.beeper = Flasher(beeperNumber)
@@ -268,12 +202,23 @@ class PiHardware(Base.Hardware):
         Wait for a button to be pressed.  Will return
         the button number that was pressed
         """
-        try:
-            if self._event.wait(timeout_sec):           
-               self._event.clear()
-               return self._buttonQ.get_nowait()
-        except Queue.Empty:
-           pass
+        start = time.time()
+        while True:
+            try:
+                if self._event.wait(timeout_sec):
+                    self._event.clear()
+                    now = time.time()
+                    msg = "OK GOT WITHIN %.2f <= %.2f" % (now-start,timeout_sec)
+                    self.write_debug(msg)                   
+                    return self._buttonQ.get_nowait()
+                else:
+                    break
+            except Queue.Empty:
+               pass
+           
+        now = time.time()
+        msg = "TIMED OUT %.2f >= %.2f" % (now-start,timeout_sec)
+        self.write_debug(msg)
         return 0 # timeout
 
     def blink_light_until_button(self, number, button = -1, blink_on_sec =.3, blink_off_sec =.3):
@@ -306,3 +251,5 @@ class PiHardware(Base.Hardware):
             m += str(i)+' '
 
         print "DEBUG: "+m
+        
+        return self

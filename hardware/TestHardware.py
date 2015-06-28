@@ -4,14 +4,14 @@ import time
 
 sys.path.append(os.path.join(os.path.dirname(__file__),'..'))
 
-import Base
+import base
 import msvcrt
 import colorama
 colorama.init()
 
 pos = lambda y, x: '\033[%d;%dH' % (y, x)
 
-class TestHardware(Base.Hardware):
+class TestHardware(base.Hardware):
 
 
     def __init__(self):
@@ -60,6 +60,7 @@ class TestHardware(Base.Hardware):
 
     def reset(self):
             if self.DEBUG:
+                self.write_debug("Game ended")
                 raw_input("Debug mode:  Press enter to continue")
             self.show_board()
             print "\033[0m" # reset
@@ -157,8 +158,11 @@ class TestHardware(Base.Hardware):
         """
         start = time.clock()
         while not msvcrt.kbhit():
-            time.sleep(.01)
-            if not msvcrt.kbhit() and timeout_sec > 0 and time.clock() - start > timeout_sec:
+            time.sleep(.001)
+            now = time.clock()
+            if not msvcrt.kbhit() and timeout_sec > 0 and now - start > timeout_sec:
+                msg = "TIMED OUT %.2f - %.2f > %.2f" % (now,start,timeout_sec)
+                self.write_debug(msg)
                 return 0 # timed out
                 
         c = msvcrt.getch()
@@ -188,14 +192,15 @@ class TestHardware(Base.Hardware):
         return self
 
     def write_debug(self,*msg):
-        m = ""
-        for i in msg:
-            m += str(i)+' '
-            
-        print pos(self._debug_line,1)+colorama.Fore.WHITE+m+'\n                             '
-        self._debug_line += 1
-        if self._debug_line > 30:
-            self._debug_line = 16
+        if self.DEBUG:
+            m = ""
+            for i in msg:
+                m += str(i)+' '
+                
+            print pos(self._debug_line,1)+colorama.Fore.WHITE+m+'\n                             '
+            self._debug_line += 1
+            if self._debug_line > 30:
+                self._debug_line = 16
         
         return self
 

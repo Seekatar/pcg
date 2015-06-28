@@ -9,9 +9,12 @@ from glob import glob
 import gc
 
 sys.path.append(os.path.join(os.path.dirname(__file__),'hardware'))
-sys.path.append(os.path.join(os.path.dirname(__file__),'Games'))
+sys.path.append(os.path.join(os.path.dirname(__file__),'games'))
+sys.path.append(os.path.join(os.path.dirname(__file__),'persistence'))
 
-from Base import User,Game
+from base import User
+from base import Game
+from base import Score
 
 def signal_handler(signal, frame):
     """
@@ -19,20 +22,24 @@ def signal_handler(signal, frame):
     """
     if hardware is not None:
         hardware.cleanup()
+    if persistence is not None:
+        persistence.close()
+        
     print "Cleaned up"
     sys.exit(0)
 
 signal.signal(signal.SIGINT, signal_handler)
 
 hardware = None
+persistence = None
 games = []
 
-def _load_games():
+def _load_games(printOut):
     """
     load all the game classes in the Games folder
     """
     games = []
-    gameFolder = os.path.join(os.path.dirname(__file__),'Games')
+    gameFolder = os.path.join(os.path.dirname(__file__),'games')
     sys.path.append(gameFolder)
     print os.path.join(gameFolder,'*.py')
     gameNum = 1
@@ -42,8 +49,14 @@ def _load_games():
             if not i.startswith('__') and isclass(m.__dict__[i]) and issubclass(m.__dict__[i],Game):
                 (name,description,levels,author,date,version) = m.__dict__[i].GameInfo()
                 hardware.write_debug( "Added", gameNum, name,"by",author,"with",levels,"levels from file",f)
-                gameNum += 1
                 games.append(m.__dict__[i])
+                
+                if printOut:
+                    print "Game %d %s with %d levels:" % (gameNum,name,levels)
+                    print games[gameNum-1].__doc__
+                    
+                gameNum += 1
+
     return games
     
 def _initialize():
@@ -52,10 +65,12 @@ def _initialize():
     """
     global hardware
     global games
+    global persistence
     
     parser = argparse.ArgumentParser(description='Point Control Game by Jimmy Wallace')
     parser.add_argument('-t','--test',action='store_true',help='run the simulator instead of on Pi hardware')
     parser.add_argument('-d','--debug',action='store_true',help='show debug message on console')
+    parser.add_argument('-l','--list',action='store_true',help='list all the games')
 
     args = parser.parse_args()
 
@@ -68,23 +83,20 @@ def _initialize():
         hardware = PiHardware()
 
     hardware.initialize(args.debug)
+    
+    from Sqlite import SqlitePersistence
+    persistence = SqlitePersistence()
+    persistence.load()
 
     # load games
-    games = _load_games()
-    if args.debug:
-        raw_input("Press enter")
-    
-def _get_user():
-    """
-    get a user 
-    """
-    u = User()
-    u.first_name = 'Jimmy'
-    u.last_name = 'Wallace'
-    u.email = 'xeekatar@gmail.com'
-    u.pin = '1234'
-    return u
+    games = _load_games(args.list)
 
+    if args.list:
+        exit ()
+            
+    if args.debug:
+        raw_input("Press enter")    
+        
 def _main():
     """
     main loop
@@ -97,7 +109,7 @@ def _main():
         hardware.reset()
 
         if user is None:
-            user = _get_user()
+            user = persistence.get_anonymous()
             
         # do game selection by good/bad light
         hardware.write_message("Waiting for a game selection","  Choose 1 - %d" % len(games)).\
@@ -105,8 +117,13 @@ def _main():
             
         select = hardware.select_by_lights(len(games),9)
         if select == 9:
-            hardware.display_characters('B','Y')
-            hardware.cleanup()
+            for i in xrange(5):
+                hardware.display_characters('B','Y')\
+                        .wait(.3)\
+                        .display_characters(' ',' ')\
+                        .wait(.2)
+            hardware.wait(1)\
+                    .cleanup()
             exit()
             
         # game picked, construct it
@@ -125,15 +142,22 @@ def _main():
 
         hardware.write_message("Playing game>",name)
         hardware.write_debug(description,'by',author)
-        start = time.clock()
-        score = game.play()
-        duration = time.clock() - start
         
+        score = Score().load_at_start(name,ver,level,user)
+        persistence.save_score_start(score,user)
+        
+        start = time.clock()
+        score.score = game.play()
+
+        score.duration_sec = time.clock() - start
+        persistence.save_score_end(score,user)
+
         hardware.beep(2,.5)
         hardware.blink_light_until_button(5)
         
         gc.enable()
         gc.collect()
+        
         
 if __name__ == '__main__':
     
