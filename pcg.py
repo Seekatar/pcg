@@ -117,8 +117,13 @@ def _main():
             
         select = hardware.select_by_lights(len(games),9)
         if select == 9:
-            hardware.display_characters('B','Y')
-            hardware.cleanup()
+            for i in xrange(5):
+                hardware.display_characters('B','Y')\
+                        .wait(.3)\
+                        .display_characters(' ',' ')\
+                        .wait(.2)
+            hardware.wait(1)\
+                    .cleanup()
             exit()
             
         # game picked, construct it
