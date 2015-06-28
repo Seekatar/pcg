@@ -1,8 +1,8 @@
-import Base
+import base
 import datetime
 import random
 
-class Simon(Base.Game):
+class Simon(base.Game):
     """
     Simon Says game.  Repeat the pattern as long as you can
     """

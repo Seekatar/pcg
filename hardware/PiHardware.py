@@ -3,7 +3,7 @@ import time
 import random
 import sys
 import os
-import Base
+import base
 import Queue
 import threading
 
@@ -81,7 +81,7 @@ def pressed9(channel):
 def button_pressed(channel):
     PiHardware.me().pressed(channel)
 
-class PiHardware(Base.Hardware):
+class PiHardware(base.Hardware):
     """
     RaspberryPi RPi.GPIO implementation of the hardware
     """
@@ -268,12 +268,16 @@ class PiHardware(Base.Hardware):
         Wait for a button to be pressed.  Will return
         the button number that was pressed
         """
+        start = time.clock()
         try:
             if self._event.wait(timeout_sec):           
                self._event.clear()
                return self._buttonQ.get_nowait()
         except Queue.Empty:
            pass
+        now = time.clock()
+        msg = "TIMED OUT %.2f - %.2f > %.2f" % (now,start,timeout_sec)
+        self.write_debug(msg)
         return 0 # timeout
 
     def blink_light_until_button(self, number, button = -1, blink_on_sec =.3, blink_off_sec =.3):

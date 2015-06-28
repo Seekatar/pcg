@@ -1,8 +1,8 @@
-import Base
+import base
 import datetime
 import random
 
-class FixedRandomGame(Base.Game):
+class FixedRandomGame(base.Game):
     """
     Game with a fixed set of random plates to touch
     

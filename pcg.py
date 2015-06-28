@@ -9,10 +9,12 @@ from glob import glob
 import gc
 
 sys.path.append(os.path.join(os.path.dirname(__file__),'hardware'))
-sys.path.append(os.path.join(os.path.dirname(__file__),'Games'))
-sys.path.append(os.path.join(os.path.dirname(__file__),'Persistence'))
+sys.path.append(os.path.join(os.path.dirname(__file__),'games'))
+sys.path.append(os.path.join(os.path.dirname(__file__),'persistence'))
 
-from Base import User,Game,Score
+from base import User
+from base import Game
+from base import Score
 
 def signal_handler(signal, frame):
     """
@@ -37,7 +39,7 @@ def _load_games(printOut):
     load all the game classes in the Games folder
     """
     games = []
-    gameFolder = os.path.join(os.path.dirname(__file__),'Games')
+    gameFolder = os.path.join(os.path.dirname(__file__),'games')
     sys.path.append(gameFolder)
     print os.path.join(gameFolder,'*.py')
     gameNum = 1

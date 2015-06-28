@@ -4,7 +4,7 @@ import os
 import sys
 sys.path.append(os.path.join(os.path.dirname(__file__),'..'))
 
-from Base import Persistence, User, Score
+from base import Persistence, User, Score
 
 class SqlitePersistence(Persistence):
     """
@@ -144,8 +144,9 @@ if __name__ == '__main__':
         sql._create();
     elif args.scores:
         sql.load()
+        print "%-23s %3s %-20s %3s %4s %s" % ("Timestamp","Usr","Game","Scr","Time","Crashed")
         for s in sql.scores():
-            print s.timestamp,s.user_id,s.game_name,s.score,s.duration_sec,s.crashed
+            print "%-23s %3d %20s %3d %4.2f %d" % (s.timestamp,s.user_id,s.game_name,s.score,s.duration_sec,s.crashed)
     else:
         sql.load()
         print sql.get_anonymous()   

@@ -1,7 +1,7 @@
-import Base
+import base
 import datetime
 
-class TestGame(Base.Game):
+class TestGame(base.Game):
     """
     Simple test game that lights all panels waiting for a hit
     """

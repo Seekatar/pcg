@@ -1,4 +1,4 @@
-import Base
+import base
 import datetime
 import random
 from FixedRandomGame import FixedRandomGame as __base

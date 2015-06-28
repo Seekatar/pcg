@@ -4,14 +4,14 @@ import time
 
 sys.path.append(os.path.join(os.path.dirname(__file__),'..'))
 
-import Base
+import base
 import msvcrt
 import colorama
 colorama.init()
 
 pos = lambda y, x: '\033[%d;%dH' % (y, x)
 
-class TestHardware(Base.Hardware):
+class TestHardware(base.Hardware):
 
 
     def __init__(self):
@@ -158,8 +158,11 @@ class TestHardware(Base.Hardware):
         """
         start = time.clock()
         while not msvcrt.kbhit():
-            time.sleep(.01)
-            if not msvcrt.kbhit() and timeout_sec > 0 and time.clock() - start > timeout_sec:
+            time.sleep(.001)
+            now = time.clock()
+            if not msvcrt.kbhit() and timeout_sec > 0 and now - start > timeout_sec:
+                msg = "TIMED OUT %.2f - %.2f > %.2f" % (now,start,timeout_sec)
+                self.write_debug(msg)
                 return 0 # timed out
                 
         c = msvcrt.getch()
