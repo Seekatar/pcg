@@ -146,10 +146,10 @@ def _main():
         score = Score().load_at_start(name,ver,level,user)
         persistence.save_score_start(score,user)
         
-        start = time.clock()
+        start = time.time()
         score.score = game.play()
 
-        score.duration_sec = time.clock() - start
+        score.duration_sec = time.time() - start
         persistence.save_score_end(score,user)
 
         hardware.beep(2,.5)

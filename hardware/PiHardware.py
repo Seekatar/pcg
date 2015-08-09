@@ -80,7 +80,7 @@ class PiHardware(base.Hardware):
         for (i,b) in enumerate(self.plates):
             io.setup(b,io.IN, pull_up_down=io.PUD_UP)
             io.add_event_detect(b,io.FALLING,\
-                                callback=button_pressed,bouncetime=100) 
+                                callback=button_pressed,bouncetime=200) 
 
         self.sevenSegment = SevenSegment(2)
         self.beeper = Flasher(beeperNumber)
@@ -208,7 +208,10 @@ class PiHardware(base.Hardware):
                 if self._event.wait(timeout_sec):
                     self._event.clear()
                     now = time.time()
-                    msg = "OK GOT WITHIN %.2f <= %.2f" % (now-start,timeout_sec)
+                    if timeout_sec != None:
+                        msg = "OK GOT WITHIN %.2f <= %.2f" % (now-start,timeout_sec)
+                    else:
+                        msg = "OK GOT WITHIN %.2f <= -1" % (now-start)
                     self.write_debug(msg)                   
                     return self._buttonQ.get_nowait()
                 else:
